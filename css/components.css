@@ -1,0 +1,161 @@
+/* components.css — hero, menú, cards, claim, footer */
+
+/* ── Hero ───────────────────────────────────────────────────────────── */
+.hero__logo {
+	width: min(320px, 64vw);
+	height: auto;
+}
+
+/* ── Menú ───────────────────────────────────────────────────────────── */
+.menu {
+	display: flex;
+	justify-content: space-between;
+	gap: var(--space-l);
+	overflow-x: auto;
+	scrollbar-width: none;
+}
+
+.menu::-webkit-scrollbar {
+	display: none;
+}
+
+.menu__item {
+	display: block;
+	font-size: var(--fs-menu);
+	font-weight: 300;
+	letter-spacing: var(--ls-menu);
+	line-height: 1.2;
+	text-transform: uppercase;
+	text-decoration: none;
+	white-space: nowrap;
+	color: var(--ink);
+}
+
+.menu__item b {
+	display: block;
+	font-weight: 700;
+}
+
+.menu__item:hover span {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
+.menu__item.is-active {
+	color: var(--red);
+}
+
+/* ── Carrusel (estilos; la lógica llega en etapas 3-4) ──────────────── */
+.track {
+	display: flex;
+	align-items: stretch;
+	gap: var(--card-gap);
+	height: 100%;
+	min-height: 0;
+	overflow-x: auto;
+	overscroll-behavior-x: contain;
+	touch-action: pan-x;
+	scrollbar-width: none;
+	/* las cards de los extremos deben poder centrarse */
+	padding-inline: calc(50% - var(--card-w) / 2);
+}
+
+.track::-webkit-scrollbar {
+	display: none;
+}
+
+.card {
+	position: relative;
+	flex: 0 0 var(--card-w);
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+	gap: var(--space-l);
+	padding: var(--space-xl);
+	color: var(--inverse);
+	text-transform: uppercase;
+	overflow: hidden;
+}
+
+.card--texto {
+	background: var(--red);
+}
+
+.card__media {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+}
+
+.card__media img,
+.card__media video {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+/* gradiente de legibilidad exacto de Figma */
+.card__media::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(46.5deg, var(--ink) 0%, rgba(10, 9, 8, 0) 46.6%);
+}
+
+.card__title {
+	position: relative;
+	font-size: var(--fs-heading);
+	font-weight: 200;
+	letter-spacing: var(--ls-heading);
+	line-height: var(--lh-heading);
+}
+
+.card__title b {
+	display: block;
+	font-weight: 700;
+}
+
+.card__sub {
+	position: relative;
+	max-width: 20ch;
+	font-size: var(--fs-body);
+	font-weight: 400;
+	letter-spacing: var(--ls-body);
+	line-height: var(--lh-body);
+}
+
+/* ── Claim ──────────────────────────────────────────────────────────── */
+.claim {
+	max-width: 668px;
+	text-align: center;
+	font-size: clamp(16px, 1.46vw + 8px, 22px);
+	font-weight: 200;
+	letter-spacing: var(--ls-heading);
+	line-height: var(--lh-heading);
+	text-transform: uppercase;
+}
+
+.claim b {
+	font-weight: 700;
+}
+
+/* ── Footer ─────────────────────────────────────────────────────────── */
+.footer__link {
+	font-size: var(--fs-body);
+	font-weight: 400;
+	letter-spacing: var(--ls-body);
+	line-height: var(--lh-body);
+	text-transform: uppercase;
+	text-decoration: none;
+	align-self: center;
+}
+
+.footer__link:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
+.footer__sep {
+	width: var(--hairline);
+	background: var(--ink);
+}

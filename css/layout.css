@@ -1,0 +1,61 @@
+/* layout.css — grid de 5 franjas fijas; solo el carrusel se desplaza */
+
+.page {
+	position: relative;
+	height: 100%;
+	display: grid;
+	grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+	background: var(--surface);
+	border: 1px solid var(--ink);
+}
+
+/* grano tinta sobre la superficie clara (diana Figma: densidad 23%, muy sutil) */
+.page::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 80;
+	pointer-events: none;
+	background: url("../assets/textures/grain-dark.png") repeat;
+	background-size: 256px 256px;
+	opacity: 0.18;
+}
+
+.strip {
+	position: relative;
+	padding: var(--space-l);
+	min-width: 0;
+}
+
+.strip + .strip {
+	border-top: var(--hairline) solid var(--ink);
+}
+
+.strip--hero {
+	display: grid;
+	place-items: center;
+}
+
+.strip--cards {
+	/* la franja flexible: el track clipa dentro del padding, como en Figma */
+	display: grid;
+	min-height: 0;
+}
+
+.strip--claim {
+	display: grid;
+	place-items: center;
+}
+
+.strip--footer {
+	display: flex;
+	align-items: stretch;
+	justify-content: center;
+	gap: var(--space-l);
+}
+
+@media (max-width: 720px) {
+	.strip {
+		padding: var(--space-m);
+	}
+}
