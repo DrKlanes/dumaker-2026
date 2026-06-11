@@ -108,15 +108,6 @@
 	overflow: hidden;
 }
 
-/* Táctil: snap más pegajoso. El fling suelto se asienta en la vecina;
-   recorrer varias cards sigue siendo posible arrastrando sin soltar.
-   (Única palanca nativa: no existe "resistencia" graduable en CSS.) */
-@media (pointer: coarse) {
-	.card {
-		scroll-snap-stop: always;
-	}
-}
-
 .card--texto {
 	background: var(--red);
 }

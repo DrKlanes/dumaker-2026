@@ -47,9 +47,12 @@
 	}
 }
 
+/* móvil: la card protagonista deja asomar un dedo de las vecinas a cada
+   lado (~15-24px según ancho) — y sitio para el efecto-firma de Fase 2 */
 @media (max-width: 720px) {
 	:root {
 		--frame: 8px;
-		--card-w: 88vw;
+		--card-w: 72vw;
+		--card-gap: 12px;
 	}
 }
