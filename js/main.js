@@ -61,7 +61,16 @@ async function boot() {
 
 	createMenuSync(menuEl, cards, centerline, animator);
 	createVideoSync(trackEl, geometry, centerline, loop);
-	createCssBridge(trackEl, geometry, centerline);
+	const cssBridge = createCssBridge(trackEl, geometry, centerline);
+
+	// Fase 2: capa cinética GL — entra tras el primer reposo (post-LCP);
+	// si falla cualquier paso de su boot, la Fase 1 queda intacta
+	Promise.race([
+		new Promise((r) => centerline.onSettled(r)),
+		new Promise((r) => setTimeout(r, 4000)),
+	]).then(() => import('./consumers/gl/index.js'))
+		.then((m) => m.init({ centerline, loop, cssBridge }))
+		.catch(() => {});
 
 	// un gesto táctil nativo recupera el snap CSS inmediatamente
 	trackEl.addEventListener('touchstart', () => {

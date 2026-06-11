@@ -1,0 +1,142 @@
+// Entrada de la capa cinética (Fase 2). Único módulo que main.js importa.
+// Regla heredada: si CUALQUIER paso del boot falla, no se ha ocultado
+// nada del DOM → la Fase 1 queda intacta píxel por píxel.
+import { config } from './config.js';
+import { createGL } from './lib/minigl.js';
+import { VERT, frag } from './shaders.js';
+import { createDomBridge } from './domBridge.js';
+import { createCardsLayer } from './cardsLayer.js';
+import { createTicker } from './ticker.js';
+import { makeNoiseTexture, makeGrainTexture, createVideoFeed, loadLabelFonts } from './textures.js';
+
+export async function init({ centerline, loop, cssBridge }) {
+	if (matchMedia('(forced-colors: active)').matches) return;
+	if (navigator.connection?.saveData) return;
+	const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+	let profileName = matchMedia('(pointer: coarse)').matches ? 'LITE' : 'FULL';
+	let mgl = null;
+	let layer = null;
+	let ticker = null;
+
+	const bridge = createDomBridge({
+		onLayout() {
+			if (!layer) return;
+			layer.refreshCovers();
+			layer.rebuildLabels(bridge.env.sx);
+			ticker?.renderOnce();
+		},
+		onFocusReveal(index) {
+			if (!layer) return;
+			layer.setHide(index, index >= 0);
+			ticker?.renderOnce();
+		},
+	});
+	bridge.env.margin = config.margin;
+
+	function applyProfile() {
+		const p = config.profiles[profileName];
+		bridge.env.dprCap = p.dprCap;
+		bridge.env.scale = p.scale;
+	}
+
+	function teardown() {
+		ticker?.stop();
+		bridge.destroy();
+	}
+
+	try {
+		applyProfile();
+		if (!bridge.measure()) return teardown();
+
+		mgl = createGL(bridge.canvas);
+		if (!mgl) return teardown();
+
+		const videoFeed = createVideoFeed(mgl);
+		layer = createCardsLayer(mgl, bridge, videoFeed);
+		if (layer.initCards() === 0) return teardown();
+
+		let prog = mgl.createProgram(VERT, frag(profileName === 'LITE'));
+		layer.setProgram(prog);
+
+		// el boot jamás se cuelga en silencio: si los assets no llegan, fuera
+		const deadline = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout de assets')), 10000));
+		const [grainTex] = await Promise.race([
+			Promise.all([makeGrainTexture(mgl), loadLabelFonts()]),
+			deadline,
+		]);
+		layer.setStatic(grainTex, makeNoiseTexture(mgl));
+		await Promise.race([layer.buildTextures(bridge.env.sx), deadline]);
+
+		ticker = createTicker(centerline, layer, { reduced, onDemote: demote });
+
+		// switch atómico: texturas visibles listas + frame PRESENTADO
+		const snap = centerline.getSnapshot();
+		const visLimit = (bridge.env.rect.width / bridge.env.slotW) / 2 + 1.2;
+		if (!layer.readyFor(snap, visLimit)) {
+			await new Promise((r) => setTimeout(r, 300)); // segunda oportunidad
+			if (!layer.readyFor(snap, visLimit)) return teardown();
+		}
+		ticker.renderOnce();
+		await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+		ticker.renderOnce(); // con snapshot ya computado: el frame del switch nunca es viejo
+		bridge.on();
+		cssBridge?.disable(); // nadie consume --dist con la GL activa (one-way, documentado)
+		ticker.wake();
+	} catch (e) {
+		console.warn('gl: desactivada —', e.message);
+		return teardown();
+	}
+
+	function demote() {
+		if (profileName === 'FULL') {
+			profileName = 'LITE';
+			try {
+				applyProfile();
+				bridge.measure();
+				layer.setProgram(mgl.createProgram(VERT, frag(true)));
+				layer.rebuildLabels(bridge.env.sx);
+				console.warn('gl: degradada a LITE (fps sostenidos < 45)');
+			} catch {
+				teardown();
+			}
+		} else {
+			console.warn('gl: desactivada (LITE insuficiente)');
+			teardown();
+		}
+	}
+
+	// contexto perdido: DOM de vuelta al instante; restaurado: re-init completo
+	bridge.canvas.addEventListener('webglcontextlost', (e) => {
+		e.preventDefault();
+		ticker?.stop();
+		bridge.off();
+	});
+	bridge.canvas.addEventListener('webglcontextrestored', async () => {
+		try {
+			mgl = createGL(bridge.canvas);
+			const videoFeed = createVideoFeed(mgl);
+			layer = createCardsLayer(mgl, bridge, videoFeed);
+			layer.initCards();
+			layer.setProgram(mgl.createProgram(VERT, frag(profileName === 'LITE')));
+			const [g] = await Promise.all([makeGrainTexture(mgl)]);
+			layer.setStatic(g, makeNoiseTexture(mgl));
+			await layer.buildTextures(bridge.env.sx);
+			ticker = createTicker(centerline, layer, { reduced, onDemote: demote });
+			ticker.renderOnce();
+			requestAnimationFrame(() => {
+				bridge.on();
+				ticker.wake();
+			});
+			if (window.__GL) window.__GL = { layer, ticker, bridge, config, mgl };
+		} catch {
+			teardown();
+		}
+	});
+
+	// panel de calibración bajo demanda (?gl=debug o #gl-debug)
+	if (new URLSearchParams(location.search).get('gl') === 'debug' || location.hash === '#gl-debug') {
+		window.__GL = { layer, ticker, bridge, config, mgl }; // acceso programático en calibración
+		import('./debug.js').then((m) => m.mount({ layer, ticker, bridge, centerline })).catch(() => {});
+	}
+}
