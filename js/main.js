@@ -104,6 +104,14 @@ async function boot() {
 		}
 	});
 
+	// el logo del hero vuelve al inicio (card 00) con el mismo viaje del menú;
+	// con la 00 ya centrada el goTo se auto-anula (destino a <1px) — sin
+	// recarga, sin perder estado
+	document.querySelector('.hero__home').addEventListener('click', (e) => {
+		e.preventDefault();
+		animator.goToLogical(0);
+	});
+
 	// navegación in-page por hash (enlaces externos al menú, atrás/adelante)
 	addEventListener('hashchange', () => {
 		const i = byId(location.hash.slice(1));

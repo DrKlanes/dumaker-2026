@@ -1,6 +1,11 @@
 /* components.css — hero, menú, cards, claim, footer */
 
 /* ── Hero ───────────────────────────────────────────────────────────── */
+.hero__home {
+	display: block;
+	cursor: pointer;
+}
+
 .hero__logo {
 	width: min(320px, 64vw);
 	height: auto;
