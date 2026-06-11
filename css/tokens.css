@@ -39,6 +39,14 @@
 	:root { --hairline: 0.5px; }
 }
 
+/* rango intermedio (tablet / desktop estrecho): card proporcionada,
+   36vw aquí daría cards esqueléticas frente a la franja alta */
+@media (max-width: 1100px) {
+	:root {
+		--card-w: min(440px, 52vw);
+	}
+}
+
 @media (max-width: 720px) {
 	:root {
 		--frame: 8px;

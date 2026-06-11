@@ -48,3 +48,17 @@ export function createWheel(zoneEl, trackEl, animator, snap) {
 		},
 	};
 }
+
+// Traducción rueda→horizontal sin snap ni momentum (para el menú).
+// Solo interviene si la fila desborda; si cabe entera, no toca nada.
+export function createSimpleWheel(el) {
+	el.addEventListener('wheel', (e) => {
+		if (el.scrollWidth <= el.clientWidth) return;
+		if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+		e.preventDefault();
+		let d = e.deltaY;
+		if (e.deltaMode === 1) d *= 16;
+		else if (e.deltaMode === 2) d *= el.clientWidth;
+		el.scrollLeft += d;
+	}, { passive: false });
+}

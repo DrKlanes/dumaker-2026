@@ -18,7 +18,8 @@ export function createMenuSync(menuEl, cards, centerline, animator) {
 		item.classList.add('is-active');
 		item.setAttribute('aria-current', 'true');
 		// en fila desbordada (móvil / desktop estrecho), el activo se auto-centra
-		if (menuEl.scrollWidth > menuEl.clientWidth) {
+		// — salvo que el usuario esté arrastrando el propio menú
+		if (menuEl.scrollWidth > menuEl.clientWidth && !menuEl.classList.contains('is-dragging')) {
 			menuEl.scrollTo({
 				left: item.offsetLeft - menuEl.clientWidth / 2 + item.offsetWidth / 2,
 				behavior: 'auto',
@@ -27,6 +28,12 @@ export function createMenuSync(menuEl, cards, centerline, animator) {
 	}
 
 	centerline.subscribe((s) => setActive(s.centeredIndex), { order: 10 });
+
+	// affordance de arrastre solo cuando la fila desborda
+	const ro = new ResizeObserver(() => {
+		menuEl.classList.toggle('menu--overflow', menuEl.scrollWidth > menuEl.clientWidth);
+	});
+	ro.observe(menuEl);
 
 	menuEl.addEventListener('click', (e) => {
 		const a = e.target.closest('.menu__item');

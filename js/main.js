@@ -9,8 +9,8 @@ import { createCenterline } from './core/centerline.js';
 import { createAnimator } from './core/animator.js';
 import { createSnap } from './core/snap.js';
 import { createLoop } from './core/loop.js';
-import { createWheel } from './input/wheel.js';
-import { createDrag } from './input/drag.js';
+import { createWheel, createSimpleWheel } from './input/wheel.js';
+import { createDrag, createGlide } from './input/drag.js';
 import { createKeyboard } from './input/keyboard.js';
 import { createMenuSync } from './consumers/menu.js';
 import { createVideoSync } from './consumers/video.js';
@@ -41,8 +41,23 @@ async function boot() {
 	const loop = createLoop(trackEl, geometry, centerline);
 
 	const wheel = createWheel(zoneEl, trackEl, animator, snap);
-	createDrag(trackEl, animator, snap);
+	createDrag(trackEl, {
+		onGrab: () => animator.cancel(),
+		onDragStart: () => snap.acquire('drag'),
+		onRelease: (v) => {
+			animator.momentum(v);
+			snap.release('drag');
+		},
+	});
 	createKeyboard(trackEl, centerline, animator, N);
+
+	// el menú desbordado se navega igual que el carrusel: rueda y arrastre
+	const menuGlide = createGlide(menuEl);
+	createSimpleWheel(menuEl);
+	createDrag(menuEl, {
+		onGrab: () => menuGlide.cancel(),
+		onRelease: (v) => menuGlide.start(v),
+	});
 
 	createMenuSync(menuEl, cards, centerline, animator);
 	createVideoSync(trackEl, geometry, centerline, loop);
