@@ -44,7 +44,9 @@ export function createTicker(centerline, layer, { onDemote, reduced }) {
 	function idleTick() {
 		if (stopped || state !== 'IDLE') return;
 		const now = performance.now();
-		if (vel < config.idle.sleepVel && now - settledAt > config.idle.sleepAfterMs) {
+		// los overrides del panel de calibración mantienen el reloj despierto
+		const held = layer.overrides && (layer.overrides.velocity != null || layer.overrides.absDist != null);
+		if (!held && vel < config.idle.sleepVel && now - settledAt > config.idle.sleepAfterMs) {
 			state = 'SLEEP'; // el último frame de grano queda congelado
 			return;
 		}
