@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>dumaker</title>
+	<meta name="description" content="dumaker — dibujo, animación, juegos y universos por conocer.">
+	<style>
+		:root {
+			--color-ink: #0a0908;
+			--color-surface: #ebebeb;
+			--color-accent: #f30004;
+			--color-inverse: #fdfdfc;
+			--frame: 24px;
+		}
+		* { margin: 0; box-sizing: border-box; }
+		html, body { height: 100%; }
+		body {
+			background: var(--color-ink);
+			padding: var(--frame);
+			font-family: ui-monospace, "Chivo Mono", "Cascadia Mono", monospace;
+		}
+		main {
+			height: 100%;
+			background: var(--color-surface);
+			border: 1px solid var(--color-ink);
+			display: grid;
+			place-items: center;
+			color: var(--color-ink);
+			text-transform: uppercase;
+			letter-spacing: 0.08em;
+			font-size: 12px;
+		}
+		p b { color: var(--color-accent); }
+		@media (max-width: 600px) {
+			:root { --frame: 8px; }
+		}
+	</style>
+</head>
+<body>
+	<main>
+		<p><b>00</b>&nbsp;/&nbsp;dumaker — esqueleto en construcción</p>
+	</main>
+</body>
+</html>
