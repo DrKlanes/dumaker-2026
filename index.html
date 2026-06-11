@@ -20,49 +20,11 @@
 		</header>
 
 		<nav class="strip strip--menu" aria-label="Proyectos">
-			<ul class="menu">
-				<li><a class="menu__item is-active" href="#ahora" aria-current="true"><b>00</b><span>ahora mismo</span></a></li>
-				<li><a class="menu__item" href="#ilustracion"><b>01</b><span>ilustración</span></a></li>
-				<li><a class="menu__item" href="#diorame"><b>02</b><span>diorame</span></a></li>
-				<li><a class="menu__item" href="#the-white-cat"><b>03</b><span>the white cat</span></a></li>
-				<li><a class="menu__item" href="#velatorio"><b>04</b><span>velatorio</span></a></li>
-				<li><a class="menu__item" href="#relatos-aciagos"><b>05</b><span>relatos aciagos</span></a></li>
-				<li><a class="menu__item" href="#horripilantes-rimas"><b>06</b><span>horripilantes rimas</span></a></li>
-				<li><a class="menu__item" href="#escenas-vr"><b>07</b><span>escenas vr</span></a></li>
-				<li><a class="menu__item" href="#lab"><b>08</b><span>lab</span></a></li>
-				<li><a class="menu__item" href="#sobre-mi"><b>09</b><span>sobre mí</span></a></li>
-			</ul>
+			<ul class="menu"><!-- renderizado desde data/cards.json --></ul>
 		</nav>
 
 		<section class="strip strip--cards" aria-roledescription="carrusel" aria-label="Proyectos">
-			<!-- Cards estáticas de muestra (etapa 2); en la etapa 3 se renderizan desde data/cards.json -->
-			<ul class="track">
-				<li class="card card--texto" data-id="ahora">
-					<h2 class="card__title"><b>00</b>Ahora mismo</h2>
-					<p class="card__sub">junio 2026 / estoy trabajando en video tutorial de diorame v3</p>
-				</li>
-				<li class="card card--poster" data-id="ilustracion">
-					<div class="card__media">
-						<img src="assets/cards/ilustracion.webp" alt="Ilustración de criatura verde emergiendo del agua" loading="lazy">
-					</div>
-					<h2 class="card__title"><b>01</b>Ilustración</h2>
-					<p class="card__sub">por encima de todo es lo que soy</p>
-				</li>
-				<li class="card card--poster" data-id="diorame">
-					<div class="card__media">
-						<img src="assets/cards/diorame.webp" alt="Formas de color de la app de dibujo Diorame" loading="lazy">
-					</div>
-					<h2 class="card__title"><b>02</b>Diorame</h2>
-					<p class="card__sub">mi app de dibujo</p>
-				</li>
-				<li class="card card--poster" data-id="the-white-cat">
-					<div class="card__media">
-						<img src="assets/cards/diorame.webp" alt="" loading="lazy">
-					</div>
-					<h2 class="card__title"><b>03</b>The White Cat</h2>
-					<p class="card__sub">un juego, estamos en ello</p>
-				</li>
-			</ul>
+			<ul class="track"><!-- renderizado desde data/cards.json --></ul>
 		</section>
 
 		<section class="strip strip--claim" aria-label="Claim">
@@ -76,5 +38,35 @@
 		</footer>
 
 	</div>
+
+	<!-- Plantillas de card. El contenido viene de data/cards.json; aquí solo vive el marcado. -->
+	<template id="tpl-card-texto">
+		<li class="card card--texto">
+			<h2 class="card__title"><b data-slot="number"></b><a class="card__link" data-slot="link"><span data-slot="title"></span></a></h2>
+			<p class="card__sub" data-slot="sub"></p>
+		</li>
+	</template>
+
+	<template id="tpl-card-poster">
+		<li class="card card--poster">
+			<div class="card__media">
+				<img data-slot="img" loading="lazy" decoding="async" alt="">
+			</div>
+			<h2 class="card__title"><b data-slot="number"></b><a class="card__link" data-slot="link"><span data-slot="title"></span></a></h2>
+			<p class="card__sub" data-slot="sub"></p>
+		</li>
+	</template>
+
+	<template id="tpl-card-clip">
+		<li class="card card--clip">
+			<div class="card__media">
+				<video data-slot="video" muted playsinline loop preload="none"></video>
+			</div>
+			<h2 class="card__title"><b data-slot="number"></b><a class="card__link" data-slot="link"><span data-slot="title"></span></a></h2>
+			<p class="card__sub" data-slot="sub"></p>
+		</li>
+	</template>
+
+	<script type="module" src="js/main.js"></script>
 </body>
 </html>

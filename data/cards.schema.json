@@ -1,0 +1,53 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"title": "Cards de dumaker.com",
+	"description": "Las cards del carrusel. El número (00-09) se deriva del orden en el array: reordenar líneas = renumerar.",
+	"type": "object",
+	"required": ["version", "cards"],
+	"properties": {
+		"$schema": { "type": "string" },
+		"version": { "const": 1 },
+		"cards": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"required": ["id", "title", "template"],
+				"additionalProperties": false,
+				"properties": {
+					"id": {
+						"type": "string",
+						"pattern": "^[a-z0-9-]+$",
+						"description": "Identificador único en kebab-case. Se usa en la URL (#id)."
+					},
+					"title": { "type": "string", "minLength": 1 },
+					"template": {
+						"enum": ["poster", "clip", "texto"],
+						"description": "poster = imagen de fondo · clip = vídeo en loop · texto = fondo rojo tipográfico (card 00)"
+					},
+					"subtitle": { "type": ["string", "null"] },
+					"asset": {
+						"type": ["string", "null"],
+						"description": "Ruta de la imagen (poster) o el vídeo (clip). Para texto: null."
+					},
+					"poster": {
+						"type": ["string", "null"],
+						"description": "Solo para clip: imagen que se muestra mientras el vídeo no reproduce."
+					},
+					"alt": {
+						"type": ["string", "null"],
+						"description": "Descripción de la imagen para accesibilidad. Obligatorio moralmente en poster."
+					},
+					"href": {
+						"type": ["string", "null"],
+						"pattern": "^(https?:|/|#)",
+						"description": "Destino del clic. null = card sin enlace (no rompe nada)."
+					},
+					"newTab": {
+						"type": "boolean",
+						"description": "true = abre en pestaña nueva (destinos externos)."
+					}
+				}
+			}
+		}
+	}
+}
