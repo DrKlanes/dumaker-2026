@@ -47,6 +47,7 @@
 
 /* ── Carrusel (estilos; la lógica llega en etapas 3-4) ──────────────── */
 .track {
+	position: relative;
 	display: flex;
 	align-items: stretch;
 	gap: var(--card-gap);
@@ -56,7 +57,9 @@
 	overscroll-behavior-x: contain;
 	touch-action: pan-x;
 	scrollbar-width: none;
-	/* las cards de los extremos deben poder centrarse */
+	scroll-snap-type: x mandatory;
+	/* el foco por teclado aterriza ya casi centrado */
+	scroll-padding-inline: calc(50% - var(--card-w) / 2);
 	padding-inline: calc(50% - var(--card-w) / 2);
 }
 
@@ -64,8 +67,25 @@
 	display: none;
 }
 
+/* el árbitro de snap (js/core/snap.js) es el único que toca esta clase */
+.track.is-controlled {
+	scroll-snap-type: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.track {
+		cursor: grab;
+	}
+}
+
+.track.is-dragging {
+	cursor: grabbing;
+	user-select: none;
+}
+
 .card {
 	position: relative;
+	scroll-snap-align: center;
 	flex: 0 0 var(--card-w);
 	display: flex;
 	flex-direction: column;
