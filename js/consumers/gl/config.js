@@ -7,53 +7,57 @@
 
 export const config = {
 	// curva de degradación por distancia al centro
+	// CALIBRACIÓN MOISÉS (ronda 1): curva larga y casi lineal — los
+	// vecinos se mantienen legibles; la corrupción plena queda lejos
 	curve: {
-		start: 0.12,   // absDist donde empieza a degradarse (la card aguanta limpia cerca del centro)
-		end: 1.05,     // absDist de degradación plena (la vecina está en 1.0)
-		power: 1.35,   // >1 = arranque suave, mordida rápida al final
+		start: 0.23,   // absDist donde empieza a degradarse (la card aguanta limpia cerca del centro)
+		end: 2.44,     // absDist de degradación plena (la vecina está en 1.0)
+		power: 1.05,   // >1 = arranque suave, mordida rápida al final
 	},
 
 	// capa 1 — tinte rojo multiply ("papel que se pudre")
 	tint: {
 		color: [0.62, 0.04, 0.05], // rojo-sangre del viraje (sRGB 0..1; calibrar tono)
-		amount: 1.0,               // intensidad global del viraje
-		darken: 0.55,              // hundimiento de los oscuros a casi negro
-		gamma: 0.9,                // curva de contraste del hundimiento
+		amount: 1.08,              // intensidad global del viraje
+		darken: 0.39,              // hundimiento de los oscuros a casi negro
+		gamma: 1.62,               // curva de contraste del hundimiento
 		textCard: 0.45,            // factor para la card 00 (ya roja: no sobresaturar)
 		srgb: 1,                   // 1 = multiply en sRGB (como compone Figma) · 0 = linear
 	},
 
 	// capa 2 — grano reactivo (el grano base de Fase 1, agravándose)
 	grain: {
-		amount: 0.5,   // intensidad del speckle base (PNG fase 1) con k
-		boost: 0.45,   // grano procedural fino adicional con k
+		amount: 0.77,  // intensidad del speckle base (PNG fase 1) con k
+		boost: 0.38,   // grano procedural fino adicional con k
 		size: 1.0,     // escala del speckle (1 = como fase 1)
-		clockFps: 12,  // latido del grano (reseed/s) — desacoplado del frame rate
+		clockFps: 16,  // latido del grano (reseed/s) — desacoplado del frame rate
 	},
 
 	// capa 3 — glitch analógico de cinta (bandas dirigidas desde CPU)
 	glitch: {
-		amount: 0.5,      // intensidad global de los desplazamientos
-		bandRate: 1.4,    // eventos de banda por segundo a k=1
-		bandMaxH: 0.05,   // alto máximo de banda (fracción de card)
+		amount: 1.27,     // intensidad global de los desplazamientos
+		bandRate: 3.2,    // eventos de banda por segundo a k=1
+		bandMaxH: 0.04,   // alto máximo de banda (fracción de card)
 		bandMaxOff: 0.04, // desplazamiento máximo (fracción de ancho)
 		bandTtl: 0.18,    // vida de una banda (s)
-		roll: 0.35,       // rolling vertical de señal vieja (px de amplitud a k=1)
+		roll: 1.05,       // rolling vertical de señal vieja (px de amplitud a k=1)
 		rollSpeed: 0.55,  // velocidad del rolling (Hz)
 	},
 
 	// capa 4 — temblor del borde de la card (vínculo con la línea de Fase 1)
+	// calibrado a vibración fina y rápida (poca amplitud, mucha frecuencia)
 	tremor: {
-		amount: 3.5,  // amplitud máxima en px a k=1 (≤ margin)
-		freq: 70.0,   // frecuencia del ruido a lo largo del borde
-		speed: 7.0,   // ticks de fase por segundo (mismo idioma que el glitch)
+		amount: 1.6,   // amplitud máxima en px a k=1 (≤ margin)
+		freq: 200.0,   // frecuencia del ruido a lo largo del borde
+		speed: 23.5,   // ticks de fase por segundo (mismo idioma que el glitch)
 	},
 
 	// modulación por velocidad de scroll (da vida; desactivable con gain 0)
+	// gain alto: el efecto respira FUERTE al moverse, se asienta en reposo
 	velocity: {
-		gain: 0.4,    // cuánto suma la velocidad a k (0 = off)
+		gain: 1.72,   // cuánto suma la velocidad a k (0 = off)
 		cap: 1.2,     // tope del boost
-		tauUp: 0.06,  // s — respuesta al acelerar (rápida)
+		tauUp: 0.12,  // s — respuesta al acelerar
 		tauDown: 0.4, // s — caída al frenar (lenta, se asienta)
 		norm: 2200,   // px/s que equivalen a boost 1.0 antes de gain
 	},
