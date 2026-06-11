@@ -82,5 +82,5 @@ body::after {
 	pointer-events: none;
 	background: url("../assets/textures/grain-light.png") repeat;
 	background-size: 256px 256px;
-	opacity: 0.25;
+	opacity: 0.2;
 }
