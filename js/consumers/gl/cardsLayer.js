@@ -237,7 +237,6 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 			prog.u2f('uQuad', w * sx, h * sx);
 			prog.u1f('uK', k);
 			prog.u1f('uHide', c.hide ? 1 : 0);
-			prog.u1f('uHasMedia', c.hasMedia ? 1 : 0);
 			prog.u1f('uIsText', c.isText ? 1 : 0);
 			prog.u1f('uGradOn', c.isText ? 0 : 1); // la card de texto nunca lleva gradiente
 			prog.u2f('uGradOrigin', 0, 1);
@@ -254,8 +253,12 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 					}
 				}
 			}
-			if (c.hasMedia && media) mgl.bind(media, 0);
+			// clip sin frame aún (vídeo cargando): uHasMedia 0 → fondo limpio,
+			// no se pinta basura de otra card hasta el 1er frame del vídeo.
+			const hasMedia = c.hasMedia && !!media;
+			if (hasMedia) mgl.bind(media, 0);
 			prog.u1i('uMedia', 0);
+			prog.u1f('uHasMedia', hasMedia ? 1 : 0);
 			if (c.labelTex) mgl.bind(c.labelTex, 1);
 			prog.u1i('uLabel', 1);
 			prog.u1f('uHasLabel', c.labelTex ? 1 : 0); // LITE: 0 (texto por DOM)

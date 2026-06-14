@@ -38,11 +38,11 @@
 		{
 			"id": "the-white-cat",
 			"title": "The White Cat",
-			"template": "poster",
+			"template": "clip",
 			"subtitle": "un juego, estamos en ello",
-			"asset": "assets/cards/diorame.webp",
+			"asset": "assets/cards/the_white_cat.mp4",
 			"poster": null,
-			"alt": "Imagen provisional del juego The White Cat",
+			"alt": "Vídeo del juego The White Cat",
 			"href": null,
 			"newTab": true
 		},
