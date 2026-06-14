@@ -19,7 +19,9 @@ export function mount({ layer, ticker, bridge, centerline }) {
 	h.style.cssText = 'color:#f30004;font-weight:700;margin-bottom:8px;letter-spacing:.08em';
 	root.append(h);
 
+	let updateSwatch = () => {};
 	const repaint = () => {
+		updateSwatch();
 		ticker.renderOnce();
 		ticker.wake();
 	};
@@ -55,6 +57,20 @@ export function mount({ layer, ticker, bridge, centerline }) {
 		sliders.push({ path, input, val });
 		row(path, input, val);
 	}
+
+	// swatch del rojo-sangre del tint con hex en vivo (para cazar el tono)
+	const swatch = document.createElement('span');
+	swatch.style.cssText = 'width:28px;height:14px;border:1px solid #444;display:inline-block';
+	const hexLabel = document.createElement('span');
+	hexLabel.style.cssText = 'width:60px;text-align:right';
+	updateSwatch = () => {
+		const [r, g, b] = config.tint.color;
+		const hex = '#' + [r, g, b].map((v) => Math.round(v * 255).toString(16).padStart(2, '0')).join('');
+		swatch.style.background = hex;
+		hexLabel.textContent = hex;
+	};
+	updateSwatch();
+	row('tint.color (rojo-sangre)', swatch, hexLabel);
 
 	// ── overrides y toggles ──
 	function toggleRow(label, get, set) {

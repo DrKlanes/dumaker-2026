@@ -83,6 +83,7 @@ export const SCHEMA = [
 	['curve.start', 0, 1, 0.01], ['curve.end', 0.2, 3, 0.01], ['curve.power', 0.3, 4, 0.05],
 	['tint.amount', 0, 2, 0.01], ['tint.darken', 0, 1.5, 0.01], ['tint.gamma', 0, 3, 0.01],
 	['tint.textCard', 0, 1.5, 0.01], ['tint.srgb', 0, 1, 1],
+	['tint.color.0', 0, 1, 0.005], ['tint.color.1', 0, 1, 0.005], ['tint.color.2', 0, 1, 0.005],
 	['grain.amount', 0, 2, 0.01], ['grain.boost', 0, 2, 0.01], ['grain.size', 0.25, 4, 0.05],
 	['grain.clockFps', 2, 30, 1],
 	['glitch.amount', 0, 2, 0.01], ['glitch.bandRate', 0, 8, 0.1], ['glitch.bandMaxH', 0, 0.2, 0.005],
