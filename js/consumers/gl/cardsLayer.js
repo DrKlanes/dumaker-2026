@@ -172,6 +172,14 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 		const visLimit = (trackW / env.slotW) / 2 + 1.2;
 		const velBoost = overrides.velocity ?? timing.velBoost;
 
+		// Graduación por PROXIMIDAD AL BORDE DEL VIEWPORT, no por nº de cards.
+		// halfCap = slots del centro al borde EN ESTE monitor; reanclamos para
+		// que el borde físico caiga siempre en la posición de curva `edgeRef`,
+		// idéntico en laptop / Full HD / ultrawide. centerline sigue dando
+		// slots físicos (posicionamiento, vídeo, culling intactos).
+		const halfCap = (trackW / 2) / env.slotW;
+		const edgeScale = halfCap > 0 ? config.curve.edgeRef / halfCap : 1;
+
 		// gradiente (depende solo del tamaño de card)
 		const a = (GRAD_DEG * Math.PI) / 180;
 		const d = [Math.sin(a), -Math.cos(a)]; // uv y-abajo
@@ -181,11 +189,12 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 		for (const sc of snapshot.cards) {
 			const c = cards[sc.index];
 			if (!c) continue;
-			const absDist = overrides.absDist ?? sc.absDist;
-			const dist = overrides.absDist ?? sc.dist;
 			if (Math.abs(sc.dist) > visLimit) continue;
+			// override del panel = fuerza el input de curva directo (preview
+			// del estado extremo); si no, distancia reanclada al viewport
+			const gradeDist = overrides.absDist ?? (sc.absDist * edgeScale);
 
-			let k = curveK(absDist) * (1 + velBoost);
+			let k = curveK(gradeDist) * (1 + velBoost);
 			updateBands(c, Math.min(k, 1), timing.dt, timing.now);
 
 			// quad en px CSS del canvas (y luego a buffer con sx):

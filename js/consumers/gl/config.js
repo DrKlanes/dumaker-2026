@@ -13,6 +13,12 @@ export const config = {
 		start: 0.23,   // absDist donde empieza a degradarse (la card aguanta limpia cerca del centro)
 		end: 2.44,     // absDist de degradación plena (la vecina está en 1.0)
 		power: 1.05,   // >1 = arranque suave, mordida rápida al final
+		// ANCLAJE AL VIEWPORT: posición de curva en la que cae el borde físico
+		// de la pantalla, sea cual sea el monitor. La graduación usa
+		// (absDist × edgeRef / half-capacity), así el borde se comporta igual
+		// en laptop / Full HD / ultrawide. Default ≈ half-capacity de Full HD
+		// (~1.6): reproduce esas pantallas y alinea ultrawide con ellas.
+		edgeRef: 1.6,
 	},
 
 	// capa 1 — tinte rojo multiply ("papel que se pudre")
@@ -81,6 +87,7 @@ export const config = {
 // Esquema del panel de calibración (?gl=debug): ruta, min, max, paso
 export const SCHEMA = [
 	['curve.start', 0, 1, 0.01], ['curve.end', 0.2, 3, 0.01], ['curve.power', 0.3, 4, 0.05],
+	['curve.edgeRef', 0.6, 3, 0.01],
 	['tint.amount', 0, 2, 0.01], ['tint.darken', 0, 1.5, 0.01], ['tint.gamma', 0, 3, 0.01],
 	['tint.textCard', 0, 1.5, 0.01], ['tint.srgb', 0, 1, 1],
 	['tint.color.0', 0, 1, 0.005], ['tint.color.1', 0, 1, 0.005], ['tint.color.2', 0, 1, 0.005],
