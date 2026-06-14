@@ -190,6 +190,17 @@ export function mount({ layer, ticker, bridge, centerline }) {
 			alert('JSON inválido');
 		}
 	});
+	// descarga el preset vivo como preset.json (mismo formato/tabs que el
+	// archivo canónico) — sustituir js/consumers/gl/preset.json con él
+	btn('descargar preset.json', () => {
+		const blob = new Blob([JSON.stringify(config, null, '\t') + '\n'], { type: 'application/json' });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = 'preset.json';
+		a.click();
+		URL.revokeObjectURL(url);
+	});
 	root.append(presetBar);
 
 	// ── HUD de frame-time ──
