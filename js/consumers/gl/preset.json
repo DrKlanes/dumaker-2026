@@ -1,19 +1,19 @@
 {
 	"_meta": {
 		"nombre": "dumaker-efecto-firma",
-		"version": "v2-postnormalizacion-viewport",
-		"estado": "provisional — pendiente de validar el carácter en 4 anchuras antes de aprobar como definitivo. Cambios sobre v1: rojo puro [1,0,0], gamma 1.53, sleepAfterMs 2900. Añadida capa fisheye global (amount/start) — calibrar curvatura.",
+		"version": "v3-fisheye-inverso",
+		"estado": "provisional — pendiente de validar el carácter en 4 anchuras. Cambios sobre v2: fisheye inverso (amount -1, hacia afuera, sensación inmersiva), start 0.18, velocity.gain 1.56. PENDIENTE: el grano hace vetas en los bordes con fisheye inverso (se aplica antes del warp) — fix: mover el grano a screen-space tras la distorsión.",
 		"fecha": "2026-06-14",
-		"caracter": "Curva larga casi lineal (vecinos legibles). Temblor fino y nervioso. Glitch protagonista, grano vivo. La velocidad es el centro del gesto. Graduación anclada al borde del viewport (curve.edgeRef).",
-		"comoEditar": "ÚNICA fuente de verdad del efecto. La web lo carga al arrancar. Para cambiarlo: ajusta en ?gl=debug, pulsa 'export' y pega aquí ese JSON (conserva este _meta). 'import' del panel aplica un JSON en vivo sin tocar el archivo."
+		"caracter": "Curva larga casi lineal (vecinos legibles). Temblor fino y nervioso. Glitch protagonista, grano vivo. La velocidad es el centro del gesto. Ojo de pez inverso (extremos hacia afuera) para sensación de carrusel inmersivo. Graduación anclada al borde del viewport (curve.edgeRef).",
+		"comoEditar": "ÚNICA fuente de verdad del efecto. La web lo carga al arrancar. Para cambiarlo: ajusta en ?gl=debug, pulsa 'export' o 'descargar preset.json' y reemplaza este archivo (conserva este _meta). 'import' aplica un JSON en vivo sin tocar el archivo."
 	},
 	"curve": { "start": 0.23, "end": 2.44, "power": 1.05, "edgeRef": 1.6 },
 	"tint": { "color": [1, 0, 0], "amount": 1.08, "darken": 0.39, "gamma": 1.53, "textCard": 0.45, "srgb": 1 },
 	"grain": { "amount": 0.77, "boost": 0.38, "size": 1, "clockFps": 16 },
 	"glitch": { "amount": 1.27, "bandRate": 3.2, "bandMaxH": 0.04, "bandMaxOff": 0.04, "bandTtl": 0.18, "roll": 1.05, "rollSpeed": 0.55 },
 	"tremor": { "amount": 1.6, "freq": 200, "speed": 23.5 },
-	"velocity": { "gain": 1.72, "cap": 1.2, "tauUp": 0.12, "tauDown": 0.4, "norm": 2200 },
-	"fisheye": { "amount": 0.1, "start": 0.35 },
+	"velocity": { "gain": 1.56, "cap": 1.2, "tauUp": 0.12, "tauDown": 0.4, "norm": 2200 },
+	"fisheye": { "amount": -1, "start": 0.18 },
 	"idle": { "sleepVel": 1.5, "sleepAfterMs": 2900 },
 	"profiles": { "FULL": { "dprCap": 2, "scale": 1 }, "LITE": { "dprCap": 1, "scale": 0.75 } },
 	"margin": 10
