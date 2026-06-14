@@ -65,8 +65,8 @@
 		"squeeze": 0
 	},
 	"fisheyeLite": {
-		"amount": -0.4,
-		"start": 0.55,
+		"amount": -0.045,
+		"start": 0.33,
 		"squeeze": 0
 	},
 	"gradient": {
