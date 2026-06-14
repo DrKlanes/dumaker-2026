@@ -1,7 +1,9 @@
 // Orquestador único: carga datos → render → módulos del carrusel.
 // Regla de dependencias: core no importa nada externo; input usa
 // animator+snap; consumers solo consumen centerline. Nadie importa main.
-// Fase 2: import('./consumers/gl/index.js') dinámico aquí, y nada más.
+// Fase 2: la capa GL se importa ESTÁTICA (init se llama tras el settled).
+// Antes era import() dinámico, pero los módulos dinámicos caen fuera de
+// la ventana de hard-reload → GitHub Pages servía JS cacheado 10 min.
 import { loadData } from './data/cards.js';
 import { renderMenu, renderTrack, renderDataError } from './dom/render.js';
 import { createGeometry } from './core/geometry.js';
@@ -15,6 +17,7 @@ import { createKeyboard } from './input/keyboard.js';
 import { createMenuSync } from './consumers/menu.js';
 import { createVideoSync } from './consumers/video.js';
 import { createCssBridge } from './consumers/cssBridge.js';
+import { init as initGL } from './consumers/gl/index.js';
 
 const COPIES = 5; // loop infinito: copia central canónica, ±2 periodos de pista
 
@@ -63,13 +66,12 @@ async function boot() {
 	createVideoSync(trackEl, geometry, centerline, loop);
 	const cssBridge = createCssBridge(trackEl, geometry, centerline);
 
-	// Fase 2: capa cinética GL — entra tras el primer reposo (post-LCP);
-	// si falla cualquier paso de su boot, la Fase 1 queda intacta
+	// Fase 2: capa cinética GL — init tras el primer reposo (el módulo ya
+	// está cargado por el import estático); si falla su boot, Fase 1 intacta
 	Promise.race([
 		new Promise((r) => centerline.onSettled(r)),
 		new Promise((r) => setTimeout(r, 4000)),
-	]).then(() => import('./consumers/gl/index.js'))
-		.then((m) => m.init({ centerline, loop, cssBridge }))
+	]).then(() => initGL({ centerline, loop, cssBridge }))
 		.catch(() => {});
 
 	// un gesto táctil nativo recupera el snap CSS inmediatamente
