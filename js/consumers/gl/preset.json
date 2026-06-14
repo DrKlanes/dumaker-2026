@@ -96,10 +96,18 @@
 			0.05,
 			0.06
 		],
-		"trailTtl": 500,
-		"trailVar": 0.6,
-		"trailDensity": 0.5,
-		"turbulence": 0.4
+		"hoverColorAlt": [
+			1,
+			1,
+			1
+		],
+		"edgeWidth": 0.18,
+		"speckSize": 2,
+		"speckSizeVar": 0.6,
+		"trailDensity": 2,
+		"trailTtl": 600,
+		"trailTail": 0.15,
+		"jitter": 6
 	},
 	"profiles": {
 		"FULL": {

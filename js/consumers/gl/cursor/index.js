@@ -2,30 +2,32 @@
 // CURSOR CINÉTICO (Fase 2) — reemplaza el cursor nativo en desktop con
 // puntero fino. Ortogonal al carrusel: canvas propio (fixed, viewport),
 // contexto GL propio, loop propio. NO toca centerline ni el canvas del
-// track. Reutiliza la materia del efecto-firma (grano PNG + value-noise +
-// hash + config.grain + reloj a config.grain.clockFps).
+// track. Reutiliza la materia del efecto-firma (PNG de grano + hash +
+// config.grain + reloj a config.grain.clockFps).
 //
-// Comportamiento:
 //  · reposo: cuadrado sólido PEGADO al ratón (sin lag), color cursor.color.
-//  · al mover: estela de specks de grano que se disuelven a ritmos
-//    distintos (ttl aleatorio) sobre noise turbulento.
-//  · sobre interactivos: el cuadrado vira a config.tint.color (rojo de
-//    marca) y crece (size→hoverSize) con ease-in-out (cursor.easeMs).
+//  · al mover: ENJAMBRE de puntos diminutos de grano (gl.POINTS), tamaño
+//    variable, cola larga de persistencia (trailTail → unos quedan
+//    anclados), grano táctil del PNG, decay no lineal. Anclados en coords
+//    de viewport donde se soltaron.
+//  · sobre interactivos: el cuadrado crece (size→hoverSize, ease-in-out) y
+//    gana borde de contraste (B, nunca se pierde); el relleno vira a rojo
+//    de marca, o a blanco (hoverColorAlt) sobre superficies rojas (A:
+//    .card--texto), intercambiando relleno/borde.
 //  · reduced-motion: SIN estela; cuadrado + viraje + crecimiento se quedan.
 //
-// Red de seguridad: el cursor nativo (cursor:none) solo se oculta tras el
-// primer frame presentado; cualquier fallo o contexto perdido lo restaura.
-// Loop con sueño: solo renderiza con actividad (mover / estela / ease).
+// Red de seguridad: cursor:none se activa SOLO tras el primer frame; fallo
+// de boot o webglcontextlost lo retira → el cursor nativo vuelve.
 // ═══════════════════════════════════════════════════════════════════
 import { createGL } from '../lib/minigl.js';
-import { makeGrainTexture, makeNoiseTexture } from '../textures.js';
+import { makeGrainTexture } from '../textures.js';
 import { config } from '../config.js';
-import { VERT, FRAG } from './shader.js';
+import { SQUARE_VERT, SQUARE_FRAG, POINTS_VERT, POINTS_FRAG } from './shader.js';
 
-// elementos que disparan el viraje rojo + crecimiento (sin tocar el HTML)
 const INTERACTIVE = 'a, button, [role="button"], .card, [data-cursor]';
-const MAX_SPECKS = 300;  // cap de seguridad del pool ante movimiento muy rápido
-const SPECK_SCALE = 1.4; // el speck es un pelín mayor que el cuadrado (cuerpo)
+const RED = '.card--texto';   // superficie roja entera (viraje a blanco, A)
+const MAX_SPECKS = 4000;      // cap del enjambre (un solo draw-call igualmente)
+const STRIDE = 5;             // floats por punto: x, y, size, life, seed
 
 const clamp01 = (x) => (x < 0 ? 0 : x > 1 ? 1 : x);
 const smooth = (t) => { t = clamp01(t); return t * t * (3 - 2 * t); };
@@ -39,19 +41,35 @@ export async function createCursor({ reduced }) {
 
 	const mgl = createGL(canvas);
 	if (!mgl) { canvas.remove(); return null; }
+	const gl = mgl.gl;
 
-	// oculta el cursor nativo SOLO con esta clase en <html> (se activa tras
-	// el primer frame; se retira ante cualquier fallo → nativo de vuelta)
+	// oculta el cursor nativo SOLO con esta clase en <html> (tras el 1er
+	// frame; se retira ante cualquier fallo → cursor nativo de vuelta)
 	const style = document.createElement('style');
 	style.dataset.glCursor = '';
 	style.textContent = 'html.gl-cursor-on,html.gl-cursor-on *{cursor:none!important}';
 	document.head.append(style);
 
-	let grainTex, noiseTex, prog;
+	let grainTex, square, points, pointsVAO, pointsBuf, pData;
 	try {
 		grainTex = await makeGrainTexture(mgl);
-		noiseTex = makeNoiseTexture(mgl);
-		prog = mgl.createProgram(VERT, FRAG);
+		square = mgl.createProgram(SQUARE_VERT, SQUARE_FRAG);
+		points = mgl.createProgram(POINTS_VERT, POINTS_FRAG);
+		// VAO/buffer dinámico del enjambre (gl crudo; aPos en loc 0 por minigl)
+		pData = new Float32Array(MAX_SPECKS * STRIDE);
+		pointsVAO = gl.createVertexArray();
+		pointsBuf = gl.createBuffer();
+		gl.bindVertexArray(pointsVAO);
+		gl.bindBuffer(gl.ARRAY_BUFFER, pointsBuf);
+		gl.bufferData(gl.ARRAY_BUFFER, pData.byteLength, gl.DYNAMIC_DRAW);
+		const bytes = STRIDE * 4;
+		const set = (name, size, off) => {
+			const l = name === 'aPos' ? 0 : gl.getAttribLocation(points.prog, name);
+			gl.enableVertexAttribArray(l);
+			gl.vertexAttribPointer(l, size, gl.FLOAT, false, bytes, off);
+		};
+		set('aPos', 2, 0); set('aSize', 1, 8); set('aLife', 1, 12); set('aSeed', 1, 16);
+		gl.bindVertexArray(null);
 	} catch {
 		teardown();
 		return null;
@@ -69,44 +87,61 @@ export async function createCursor({ reduced }) {
 
 	let mx = -1e4, my = -1e4, pmx = mx, pmy = my; // px de buffer
 	let emitX = mx, emitY = my;
-	let hovering = false;
-	// ease del cuadrado (tamaño + color) con smoothstep temporal
+	let hovering = false, onRed = false;
+	// ease del cuadrado (tamaño + color de relleno + grosor de borde)
 	let curSize = config.cursor.size;
 	let curColor = config.cursor.color.slice();
+	let curEdgeW = 0;
 	let fromSize = curSize, toSize = curSize;
 	let fromColor = curColor.slice(), toColor = config.cursor.color;
+	let fromEdgeW = 0, toEdgeW = 0;
+	let edgeColor = config.cursor.hoverColorAlt;
 	let easeT0 = -1e9;
 	const specks = [];
 	let grainSeed = [0.31, 0.74], lastGrain = 0;
 	let raf = 0, running = false, presented = false, stopped = false;
 
-	function setHover(next) {
-		if (next === hovering) return;
+	function setHover(next, red) {
+		if (next === hovering && red === onRed) return;
 		hovering = next;
+		onRed = red;
 		fromSize = curSize;
 		fromColor = curColor.slice();
-		toSize = next ? config.cursor.hoverSize : config.cursor.size;
-		toColor = next ? config.tint.color : config.cursor.color;
+		fromEdgeW = curEdgeW;
+		if (next) {
+			toSize = config.cursor.hoverSize;
+			toEdgeW = config.cursor.edgeWidth;
+			// A: sobre rojo el relleno va a blanco; el borde toma el opuesto
+			toColor = red ? config.cursor.hoverColorAlt : config.tint.color;
+			edgeColor = red ? config.tint.color : config.cursor.hoverColorAlt;
+		} else {
+			toSize = config.cursor.size;
+			toEdgeW = 0;
+			toColor = config.cursor.color;
+		}
 		easeT0 = performance.now();
 		wake();
 	}
 
 	function emitTrail(nx, ny) {
 		if (emitX < -9e3) { emitX = nx; emitY = ny; return; }
+		const c = config.cursor;
 		const dx = nx - emitX, dy = ny - emitY;
-		const dist = Math.hypot(dx, dy) / dprBuf; // px CSS
-		const n = Math.min(MAX_SPECKS, Math.floor(dist * config.cursor.trailDensity));
-		if (n <= 0) return;
+		const n = Math.floor((Math.hypot(dx, dy) / dprBuf) * c.trailDensity);
+		if (n <= 0) return; // acumula distancia (no toca emitX) hasta ≥1 punto
 		const now = performance.now();
-		const jit = config.cursor.size * dprBuf;
+		const jit = c.jitter * dprBuf;
 		for (let i = 1; i <= n && specks.length < MAX_SPECKS; i++) {
 			const t = i / n;
+			// cola larga: la fracción trailTail vive 3–8× más (anclado)
+			const ttl = Math.random() < c.trailTail
+				? c.trailTtl * (3 + Math.random() * 5)
+				: c.trailTtl * (0.35 + Math.random() * 0.6);
+			const size = Math.max(1, c.speckSize * (1 + (Math.random() * 2 - 1) * c.speckSizeVar)) * dprBuf;
 			specks.push({
 				x: emitX + dx * t + (Math.random() - 0.5) * jit,
 				y: emitY + dy * t + (Math.random() - 0.5) * jit,
-				t0: now,
-				ttl: config.cursor.trailTtl * (1 - Math.random() * config.cursor.trailVar),
-				seed: Math.random() * 1000,
+				size, t0: now, ttl, seed: Math.random(),
 			});
 		}
 		emitX = nx; emitY = ny;
@@ -119,27 +154,18 @@ export async function createCursor({ reduced }) {
 		wake();
 	}
 	function onOver(e) {
-		if (e.target.closest?.(INTERACTIVE)) setHover(true);
+		const hit = e.target.closest?.(INTERACTIVE);
+		if (hit) setHover(true, !!hit.closest(RED));
 	}
 	function onOut(e) {
 		const to = e.relatedTarget;
-		if (!to || !to.closest?.(INTERACTIVE)) setHover(false);
+		if (!to || !to.closest?.(INTERACTIVE)) setHover(false, false);
 	}
 
 	addEventListener('pointermove', onMove, { passive: true });
 	addEventListener('pointerover', onOver, { passive: true });
 	addEventListener('pointerout', onOut, { passive: true });
 	addEventListener('resize', resize);
-
-	function drawQuadAt(cx, cy, sizeCss, mode, color, alpha, seed) {
-		const s = sizeCss * dprBuf;
-		prog.u4f('uRect', cx - s / 2, cy - s / 2, s, s);
-		prog.u1i('uMode', mode);
-		prog.u3f('uColor', color[0], color[1], color[2]);
-		prog.u1f('uAlpha', alpha);
-		if (mode === 1) prog.u1f('uSeed', seed);
-		mgl.drawQuad();
-	}
 
 	function frame() {
 		if (stopped) return;
@@ -148,35 +174,57 @@ export async function createCursor({ reduced }) {
 			grainSeed = [Math.random(), Math.random()];
 			lastGrain = now;
 		}
-		// ease del cuadrado (tamaño + color)
+		// ease del cuadrado
 		const e = smooth((now - easeT0) / config.cursor.easeMs);
 		curSize = fromSize + (toSize - fromSize) * e;
+		curEdgeW = fromEdgeW + (toEdgeW - fromEdgeW) * e;
 		for (let i = 0; i < 3; i++) curColor[i] = fromColor[i] + (toColor[i] - fromColor[i]) * e;
-		// retira specks muertos
-		for (let i = specks.length - 1; i >= 0; i--) {
-			if (now - specks[i].t0 >= specks[i].ttl) specks.splice(i, 1);
-		}
 
 		mgl.frame(W, H);
-		prog.use();
-		mgl.bind(grainTex, 0); prog.u1i('uGrain', 0);
-		mgl.bind(noiseTex, 1); prog.u1i('uNoise', 1);
-		prog.u2f('uRes', W, H);
-		prog.u2f('uGrainSeed', grainSeed[0], grainSeed[1]);
-		prog.u1f('uGrainAmount', config.grain.amount);
-		prog.u1f('uGrainBoost', config.grain.boost);
-		prog.u1f('uGrainSize', config.grain.size);
-		prog.u1f('uTurb', config.cursor.turbulence);
 
-		// estela (debajo del cuadrado); el rojo de hover NO la afecta
-		if (!reduced) {
-			for (const sp of specks) {
-				drawQuadAt(sp.x / dprBuf, sp.y / dprBuf, config.cursor.size * SPECK_SCALE,
-					1, config.cursor.color, 1 - (now - sp.t0) / sp.ttl, sp.seed);
+		// ── estela: enjambre de puntos (compacta vivos + 1 draw-call) ──
+		let n = 0;
+		if (!reduced && specks.length) {
+			let w = 0;
+			for (let i = 0; i < specks.length; i++) {
+				const sp = specks[i];
+				const life = (now - sp.t0) / sp.ttl;
+				if (life >= 1) continue;
+				specks[w++] = sp;
+				pData[n * STRIDE] = sp.x; pData[n * STRIDE + 1] = sp.y;
+				pData[n * STRIDE + 2] = sp.size; pData[n * STRIDE + 3] = life;
+				pData[n * STRIDE + 4] = sp.seed;
+				n++;
 			}
+			specks.length = w;
 		}
-		// cuadrado base, pegado al ratón (sin lag)
-		if (mx > -9e3) drawQuadAt(mx / dprBuf, my / dprBuf, curSize, 0, curColor, 1, 0);
+		if (n) {
+			points.use();
+			mgl.bind(grainTex, 0); points.u1i('uGrain', 0);
+			points.u2f('uRes', W, H);
+			points.u2f('uGrainSeed', grainSeed[0], grainSeed[1]);
+			points.u1f('uGrainSize', config.grain.size);
+			points.u1f('uGrainAmount', config.grain.amount);
+			points.u3f('uColor', config.cursor.color[0], config.cursor.color[1], config.cursor.color[2]);
+			gl.bindVertexArray(pointsVAO);
+			gl.bindBuffer(gl.ARRAY_BUFFER, pointsBuf);
+			gl.bufferSubData(gl.ARRAY_BUFFER, 0, pData.subarray(0, n * STRIDE));
+			gl.drawArrays(gl.POINTS, 0, n);
+			gl.bindVertexArray(null);
+		}
+
+		// ── cuadrado base, pegado al ratón (encima de la estela) ──
+		if (mx > -9e3) {
+			const s = curSize * dprBuf;
+			square.use();
+			square.u2f('uRes', W, H);
+			square.u4f('uRect', mx - s / 2, my - s / 2, s, s);
+			square.u3f('uColor', curColor[0], curColor[1], curColor[2]);
+			square.u3f('uEdgeColor', edgeColor[0], edgeColor[1], edgeColor[2]);
+			square.u1f('uEdgeW', curEdgeW);
+			square.u1f('uAlpha', 1);
+			mgl.drawQuad();
+		}
 
 		if (!presented) {
 			presented = true;
@@ -186,7 +234,7 @@ export async function createCursor({ reduced }) {
 		const moved = mx !== pmx || my !== pmy;
 		pmx = mx; pmy = my;
 		const easing = now - easeT0 < config.cursor.easeMs;
-		if (moved || easing || specks.length) raf = requestAnimationFrame(frame);
+		if (moved || easing || n) raf = requestAnimationFrame(frame);
 		else running = false; // duerme: el cuadrado queda dibujado en su sitio
 	}
 
@@ -208,8 +256,6 @@ export async function createCursor({ reduced }) {
 		style.remove();
 	}
 
-	// contexto perdido → cursor nativo de vuelta al instante (no re-monta:
-	// degradación segura; el contexto del cursor casi nunca se pierde)
 	canvas.addEventListener('webglcontextlost', (ev) => {
 		ev.preventDefault();
 		cancelAnimationFrame(raf);
