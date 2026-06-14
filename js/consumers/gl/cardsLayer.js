@@ -21,6 +21,7 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 	let prog = null;
 	let grainTex = null;
 	let noiseTex = null;
+	let grungeTex = null; // textura de mugre para el overlay del pase de lente
 	let lens = null;     // pase de lente global (ojo de pez); null = directo a pantalla
 	let target = null;   // FBO donde se compone la escena antes del warp
 	let seed = 1234;
@@ -31,9 +32,10 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 		prog = p;
 	}
 
-	function setStatic(grain, noise) {
+	function setStatic(grain, noise, grunge) {
 		grainTex = grain;
 		noiseTex = noise;
+		grungeTex = grunge;
 	}
 
 	function reseed(s) {
@@ -291,6 +293,9 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 				curve: config.curve,
 				grainSeed: timing.grainSeed,
 				velBoost,
+				grungeTex,
+				grunge: config.grunge,
+				grungeState: timing.grunge,
 			});
 		}
 	}

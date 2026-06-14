@@ -1,19 +1,24 @@
 // Política de ticker — desviación deliberada del brief (aprobada):
 // nada de retain() permanente. En movimiento la GL renderiza DENTRO del
-// callback de subscribe (un solo rAF, cero lag). En reposo late un reloj
-// de grano propio (~12fps) y tras idle.sleepAfterMs duerme del todo:
-// frame congelado, GPU y CPU a cero. El reloj de grano va DESACOPLADO
-// del frame rate (12fps de grano es más fílmico y hace invisible la
-// transición movimiento→reposo).
+// callback de subscribe (un solo rAF, cero lag, full-rate). En reposo late
+// un reloj propio (~12-16fps, config.grain.clockFps) DESACOPLADO del frame
+// rate. Reposo VIVO en desktop (perpetualIdle): el efecto sigue latiendo
+// despacio para siempre (grano hirviendo, temblor, grunge a saltos) — señal
+// de vídeo viva que no se apaga al soltar el ratón. Cortes de seguridad:
+// pestaña oculta para del todo (visibilitychange); móvil/tablet, reduced y
+// demote duermen tras idle.sleepAfterMs (batería / equipos modestos / a11y).
 import { config } from './config.js';
 
-export function createTicker(centerline, layer, { onDemote, reduced }) {
+export function createTicker(centerline, layer, { onDemote, reduced, perpetualIdle }) {
+	let perpetual = !!perpetualIdle; // reposo vivo (desktop); demote() lo apaga
 	let vel = 0; // suavizado propio por-tiempo (la EMA del contrato es por-frame)
 	let lastT = 0;
 	let grainSeed = [0.31, 0.74];
 	let lastGrain = 0;
 	let tremorPhase = 0;
 	let rollPhase = 0;
+	let grunge = { ox: 0, oy: 0, rot: 0, flip: 0 }; // estado del grunge (salta a grunge.fps)
+	let lastGrunge = 0;
 	let idleClock = 0;
 	let settledAt = 0;
 	let state = 'SLEEP';
@@ -30,9 +35,31 @@ export function createTicker(centerline, layer, { onDemote, reduced }) {
 			}
 			tremorPhase += dt * config.tremor.speed;
 			rollPhase += dt * config.glitch.rollSpeed * Math.PI * 2;
+			if (config.grunge && now - lastGrunge > 1000 / config.grunge.fps) {
+				grunge = nextGrungeState(); // salto a baja frecuencia (no se interpola)
+				lastGrunge = now;
+			}
 		}
 		const velBoost = reduced ? 0 : Math.min(vel / config.velocity.norm, config.velocity.cap) * config.velocity.gain;
-		return { dt, now, grainSeed, tremorPhase, rollPhase, velBoost, reduced };
+		return { dt, now, grainSeed, tremorPhase, rollPhase, velBoost, reduced, grunge };
+	}
+
+	// transformación del grunge ACOTADA al margen seguro: con zoom Z y ángulo
+	// θ, la ventana muestreada (semilado 0.5/Z) rotada alcanza (0.5/Z)(|cos|+
+	// |sin|); el offset se limita a 0.5 − ese alcance → guv ∈ [0,1] SIEMPRE
+	// (nunca asoma un canto). El wiggle "extremo" se habilita subiendo el zoom.
+	function nextGrungeState() {
+		const g = config.grunge;
+		const rot = (Math.random() * 2 - 1) * (g.wiggleRot * Math.PI / 180);
+		const z = Math.max(1.0001, g.zoom);
+		const reach = (0.5 / z) * (Math.abs(Math.cos(rot)) + Math.abs(Math.sin(rot)));
+		const offMax = Math.max(0, 0.5 - reach) * g.wigglePos;
+		return {
+			ox: (Math.random() * 2 - 1) * offMax,
+			oy: (Math.random() * 2 - 1) * offMax,
+			rot,
+			flip: Math.random() < 0.5 ? 0 : 1,
+		};
 	}
 
 	function updateVel(rawV, dt) {
@@ -46,17 +73,17 @@ export function createTicker(centerline, layer, { onDemote, reduced }) {
 		const now = performance.now();
 		// los overrides del panel de calibración mantienen el reloj despierto
 		const held = layer.overrides && (layer.overrides.velocity != null || layer.overrides.absDist != null);
-		if (!held && vel < config.idle.sleepVel && now - settledAt > config.idle.sleepAfterMs) {
-			state = 'SLEEP'; // el último frame de grano queda congelado
+		// dormir: bajo reduced (nada anima), o sin reposo vivo (móvil/demote)
+		// tras idle.sleepAfterMs. En desktop con reposo vivo NO se duerme:
+		// late eterno a clockFps. El panel (held) lo mantiene despierto.
+		const timedOut = vel < config.idle.sleepVel && now - settledAt > config.idle.sleepAfterMs;
+		if (!held && (reduced || (!perpetual && timedOut))) {
+			state = 'SLEEP'; // frame congelado
 			return;
 		}
 		const t = timing(now);
 		updateVel(0, t.dt);
 		layer.render(centerline.getSnapshot(), t);
-		// reduced-motion: el grano es estático (semilla congelada) → un frame
-		// basta; no late el reloj de grano (frames idénticos). El panel de
-		// calibración (held) sí lo mantiene vivo para los sliders.
-		if (reduced && !held) { state = 'SLEEP'; return; }
 		idleClock = setTimeout(() => requestAnimationFrame(idleTick), 1000 / config.grain.clockFps);
 	}
 
@@ -112,6 +139,7 @@ export function createTicker(centerline, layer, { onDemote, reduced }) {
 			clearTimeout(idleClock);
 			unsub();
 		},
+		calm() { perpetual = false; }, // demote: la GPU sufre → reposo vuelve a dormir
 		getState: () => state,
 		getVel: () => vel,
 	};

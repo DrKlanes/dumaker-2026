@@ -39,6 +39,18 @@ export async function makeGrainTexture(mgl) {
 	return t;
 }
 
+// textura grunge (escala de grises) para el overlay de mugre del pase de
+// lente. CLAMP_TO_EDGE: nunca tilea — el muestreo se mantiene dentro del
+// interior por el margen de seguridad (zoom + offset acotado en cardsLayer).
+export async function makeGrungeTexture(mgl) {
+	const img = new Image();
+	img.src = 'assets/textures/texture-grunge.webp';
+	try { await img.decode(); } catch { return null; } // opcional: si falta, sin grunge (GL viva)
+	const t = mgl.createTexture({ wrap: mgl.gl.CLAMP_TO_EDGE, filter: mgl.gl.LINEAR });
+	mgl.upload(t, img);
+	return t;
+}
+
 // textura sólida 1×1 — el fondo de la card de texto (color sólido) pasa
 // por el MISMO camino de media que las imágenes (elimina la rama especial)
 export function makeSolidTexture(mgl, rgba) {

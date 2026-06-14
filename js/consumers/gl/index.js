@@ -8,13 +8,19 @@ import { createDomBridge } from './domBridge.js';
 import { createCardsLayer } from './cardsLayer.js';
 import { createLens } from './lens.js';
 import { createTicker } from './ticker.js';
-import { makeNoiseTexture, makeGrainTexture, createVideoFeed, loadLabelFonts } from './textures.js';
+import { makeNoiseTexture, makeGrainTexture, makeGrungeTexture, createVideoFeed, loadLabelFonts } from './textures.js';
 import { createCursor } from './cursor/index.js';
 
 export async function init({ centerline, loop, cssBridge }) {
 	if (matchMedia('(forced-colors: active)').matches) return;
 	if (navigator.connection?.saveData) return;
 	const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+	// reposo VIVO solo en desktop puntero fino; saveData (ahorro explícito) lo
+	// aquieta aunque sea fine; reduced lo deja quieto. Móvil/tablet (coarse)
+	// y demote duermen tras idle.sleepAfterMs.
+	const perpetualIdle = !reduced
+		&& matchMedia('(hover: hover) and (pointer: fine)').matches
+		&& !navigator.connection?.saveData;
 
 	let profileName = matchMedia('(pointer: coarse)').matches ? 'LITE' : 'FULL';
 	// override de desarrollo: ?profile=lite|full (probar el look móvil en desktop)
@@ -86,14 +92,14 @@ export async function init({ centerline, loop, cssBridge }) {
 
 		// el boot jamás se cuelga en silencio: si los assets no llegan, fuera
 		const deadline = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout de assets')), 10000));
-		const [grainTex] = await Promise.race([
-			Promise.all([makeGrainTexture(mgl), loadLabelFonts()]),
+		const [grainTex, grungeTex] = await Promise.race([
+			Promise.all([makeGrainTexture(mgl), makeGrungeTexture(mgl), loadLabelFonts()]),
 			deadline,
 		]);
-		layer.setStatic(grainTex, makeNoiseTexture(mgl));
+		layer.setStatic(grainTex, makeNoiseTexture(mgl), grungeTex);
 		await Promise.race([layer.buildTextures(bridge.env.sx), deadline]);
 
-		ticker = createTicker(centerline, layer, { reduced, onDemote: demote });
+		ticker = createTicker(centerline, layer, { reduced, perpetualIdle, onDemote: demote });
 
 		// switch atómico: texturas visibles listas + frame PRESENTADO
 		const snap = centerline.getSnapshot();
@@ -124,6 +130,7 @@ export async function init({ centerline, loop, cssBridge }) {
 				// card de color; solo se quita el fisheye visual
 				layer.rebuildLabels(bridge.env.sx); // anula labels GL
 				bridge.on();                 // reaplica .gl-on + añade .gl-lite (texto DOM)
+				ticker.calm();               // la GPU sufre → el reposo deja de latir eterno
 				ticker.renderOnce();
 				console.warn('gl: degradada a LITE (fps sostenidos < 45)');
 			} catch {
@@ -150,10 +157,10 @@ export async function init({ centerline, loop, cssBridge }) {
 			layer.setProgram(mgl.createProgram(VERT, frag(profileName === 'LITE')));
 			lensTarget = mgl.createTarget(bridge.env.bufferW, bridge.env.bufferH);
 			layer.setLens(createLens(mgl), lensTarget);
-			const [g] = await Promise.all([makeGrainTexture(mgl)]);
-			layer.setStatic(g, makeNoiseTexture(mgl));
+			const [g, grunge] = await Promise.all([makeGrainTexture(mgl), makeGrungeTexture(mgl)]);
+			layer.setStatic(g, makeNoiseTexture(mgl), grunge);
 			await layer.buildTextures(bridge.env.sx);
-			ticker = createTicker(centerline, layer, { reduced, onDemote: demote });
+			ticker = createTicker(centerline, layer, { reduced, perpetualIdle, onDemote: demote });
 			ticker.renderOnce();
 			requestAnimationFrame(() => {
 				bridge.on();

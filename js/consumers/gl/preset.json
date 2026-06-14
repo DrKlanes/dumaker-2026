@@ -31,6 +31,15 @@
 		"size": 1,
 		"clockFps": 16
 	},
+	"grunge": {
+		"amount": 0.2,
+		"zoom": 2,
+		"wigglePos": 0.8,
+		"wiggleRot": 25,
+		"fps": 4,
+		"maskStart": 0.6,
+		"maskEnd": 1.8
+	},
 	"glitch": {
 		"amount": 1.27,
 		"bandRate": 3.2,
