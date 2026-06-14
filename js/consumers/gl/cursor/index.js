@@ -4,10 +4,10 @@
 // contexto GL propio, loop propio. NO toca centerline ni el carrusel.
 //
 //  · cuadrado sólido PEGADO al ratón (sin lag, sin rastro, sin borde).
-//  · reposo: rojo de marca (cursor.color).
-//  · hover sobre cualquier interactivo: vira a blanco (cursor.hoverColor)
-//    y crece (size→hoverSize) con ease-in-out (cursor.easeMs). Siempre,
-//    sin excepciones de superficie.
+//  · reposo: negro (cursor.color).
+//  · hover sobre enlaces/logo/menú: rojo de marca (cursor.linkColor).
+//  · hover sobre cards: blanco (cursor.cardColor).
+//  · en hover crece (size→hoverSize) con ease-in-out (cursor.easeMs).
 //
 // Red de seguridad: cursor:none se activa SOLO tras el primer frame; un
 // fallo de boot o webglcontextlost lo retira → el cursor nativo vuelve.
@@ -17,7 +17,8 @@ import { createGL } from '../lib/minigl.js';
 import { config } from '../config.js';
 import { VERT, FRAG } from './shader.js';
 
-const INTERACTIVE = 'a, button, [role="button"], .card, [data-cursor]';
+const LINKS = 'a, button, [role="button"], [data-cursor]'; // hover → rojo
+const CARD = '.card';                                      // hover → blanco
 
 const clamp01 = (x) => (x < 0 ? 0 : x > 1 ? 1 : x);
 const smooth = (t) => { t = clamp01(t); return t * t * (3 - 2 * t); };
@@ -58,7 +59,7 @@ export async function createCursor() {
 	resize();
 
 	let mx = -1e4, my = -1e4, pmx = mx, pmy = my; // px de buffer
-	let hovering = false;
+	let mode = ''; // '' reposo (negro) · 'link' enlaces (rojo) · 'card' (blanco)
 	// ease del cuadrado (tamaño + color) con smoothstep temporal
 	let curSize = config.cursor.size;
 	let curColor = config.cursor.color.slice();
@@ -67,13 +68,24 @@ export async function createCursor() {
 	let easeT0 = -1e9;
 	let raf = 0, running = false, presented = false, stopped = false;
 
-	function setHover(next) {
-		if (next === hovering) return;
-		hovering = next;
+	function targetColor(m) {
+		if (m === 'card') return config.cursor.cardColor; // blanco
+		if (m === 'link') return config.cursor.linkColor; // rojo
+		return config.cursor.color;                       // negro (reposo)
+	}
+	function classify(t) {
+		if (!t || !t.closest) return '';
+		if (t.closest(CARD)) return 'card';  // card primero: un <a> dentro de una card sigue siendo card
+		if (t.closest(LINKS)) return 'link';
+		return '';
+	}
+	function setMode(next) {
+		if (next === mode) return;
+		mode = next;
 		fromSize = curSize;
 		fromColor = curColor.slice();
 		toSize = next ? config.cursor.hoverSize : config.cursor.size;
-		toColor = next ? config.cursor.hoverColor : config.cursor.color;
+		toColor = targetColor(next);
 		easeT0 = performance.now();
 		wake();
 	}
@@ -84,16 +96,11 @@ export async function createCursor() {
 		wake();
 	}
 	function onOver(e) {
-		if (e.target.closest?.(INTERACTIVE)) setHover(true);
-	}
-	function onOut(e) {
-		const to = e.relatedTarget;
-		if (!to || !to.closest?.(INTERACTIVE)) setHover(false);
+		setMode(classify(e.target));
 	}
 
 	addEventListener('pointermove', onMove, { passive: true });
 	addEventListener('pointerover', onOver, { passive: true });
-	addEventListener('pointerout', onOut, { passive: true });
 	addEventListener('resize', resize);
 
 	function frame() {
@@ -137,7 +144,6 @@ export async function createCursor() {
 		cancelAnimationFrame(raf);
 		removeEventListener('pointermove', onMove);
 		removeEventListener('pointerover', onOver);
-		removeEventListener('pointerout', onOut);
 		removeEventListener('resize', resize);
 		document.documentElement.classList.remove('gl-cursor-on');
 		canvas.remove();

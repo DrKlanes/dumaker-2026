@@ -45,7 +45,8 @@ export const SCHEMA = [
 	['idle.sleepVel', 0.1, 20, 0.1], ['idle.sleepAfterMs', 500, 20000, 100],
 	['cursor.size', 2, 40, 1], ['cursor.hoverSize', 2, 60, 1], ['cursor.easeMs', 40, 600, 10],
 	['cursor.color.0', 0, 1, 0.005], ['cursor.color.1', 0, 1, 0.005], ['cursor.color.2', 0, 1, 0.005],
-	['cursor.hoverColor.0', 0, 1, 0.005], ['cursor.hoverColor.1', 0, 1, 0.005], ['cursor.hoverColor.2', 0, 1, 0.005],
+	['cursor.linkColor.0', 0, 1, 0.005], ['cursor.linkColor.1', 0, 1, 0.005], ['cursor.linkColor.2', 0, 1, 0.005],
+	['cursor.cardColor.0', 0, 1, 0.005], ['cursor.cardColor.1', 0, 1, 0.005], ['cursor.cardColor.2', 0, 1, 0.005],
 ];
 
 export function getPath(obj, path) {

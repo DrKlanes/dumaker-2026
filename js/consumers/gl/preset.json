@@ -92,11 +92,16 @@
 		"hoverSize": 16,
 		"easeMs": 180,
 		"color": [
+			0,
+			0,
+			0
+		],
+		"linkColor": [
 			0.9529,
 			0,
 			0.0157
 		],
-		"hoverColor": [
+		"cardColor": [
 			1,
 			1,
 			1
