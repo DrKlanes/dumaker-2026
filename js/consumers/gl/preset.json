@@ -107,12 +107,6 @@
 			1
 		]
 	},
-	"lines": {
-		"amp": 0.8,
-		"speed": 2.5,
-		"detail": 3,
-		"jitter": 0.3
-	},
 	"profiles": {
 		"FULL": {
 			"dprCap": 2,

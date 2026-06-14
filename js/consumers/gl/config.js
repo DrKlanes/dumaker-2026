@@ -47,7 +47,6 @@ export const SCHEMA = [
 	['cursor.color.0', 0, 1, 0.005], ['cursor.color.1', 0, 1, 0.005], ['cursor.color.2', 0, 1, 0.005],
 	['cursor.linkColor.0', 0, 1, 0.005], ['cursor.linkColor.1', 0, 1, 0.005], ['cursor.linkColor.2', 0, 1, 0.005],
 	['cursor.cardColor.0', 0, 1, 0.005], ['cursor.cardColor.1', 0, 1, 0.005], ['cursor.cardColor.2', 0, 1, 0.005],
-	['lines.amp', 0, 4, 0.05], ['lines.speed', 0, 10, 0.1], ['lines.detail', 0.5, 12, 0.5], ['lines.jitter', 0, 1, 0.02],
 ];
 
 export function getPath(obj, path) {

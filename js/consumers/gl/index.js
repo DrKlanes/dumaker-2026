@@ -10,7 +10,6 @@ import { createLens } from './lens.js';
 import { createTicker } from './ticker.js';
 import { makeNoiseTexture, makeGrainTexture, createVideoFeed, loadLabelFonts } from './textures.js';
 import { createCursor } from './cursor/index.js';
-import { createLines } from './lines.js';
 
 export async function init({ centerline, loop, cssBridge }) {
 	if (matchMedia('(forced-colors: active)').matches) return;
@@ -62,12 +61,6 @@ export async function init({ centerline, loop, cssBridge }) {
 		// se autodesactiva ante cualquier fallo (cursor nativo intacto).
 		if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
 			createCursor().catch(() => {});
-		}
-
-		// líneas de estructura con temblor continuo (DOM/SVG, fuera de WebGL).
-		// Bajo reduced-motion no se monta → borde recto CSS (Fase 1 intacta).
-		if (!reduced) {
-			try { createLines(); } catch { /* borde recto CSS de respaldo */ }
 		}
 
 		bridge.env.margin = config.margin;
