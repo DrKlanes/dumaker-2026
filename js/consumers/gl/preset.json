@@ -32,7 +32,7 @@
 		"clockFps": 16
 	},
 	"grunge": {
-		"amount": 0.2,
+		"amount": 1,
 		"zoom": 2,
 		"wigglePos": 0.8,
 		"wiggleRot": 25,
