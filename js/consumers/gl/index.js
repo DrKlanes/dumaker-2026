@@ -68,12 +68,12 @@ export async function init({ centerline, loop, cssBridge }) {
 		let prog = mgl.createProgram(VERT, frag(profileName === 'LITE'));
 		layer.setProgram(prog);
 
-		// lente global (ojo de pez): solo perfil FULL — en LITE el texto es
-		// DOM y no podría curvarse con su card, y móvil muestra ~1 card plana
-		if (profileName === 'FULL') {
-			lensTarget = mgl.createTarget(bridge.env.bufferW, bridge.env.bufferH);
-			layer.setLens(createLens(mgl), lensTarget);
-		}
+		// lente global: SIEMPRE (todos los perfiles) — la composición pasa por
+		// el FBO (ruta probada; arregla la invisibilidad de la card de color en
+		// la ruta directa). El fisheye solo se aplica en FULL; en LITE la lente
+		// es identidad (ver cardsLayer.render).
+		lensTarget = mgl.createTarget(bridge.env.bufferW, bridge.env.bufferH);
+		layer.setLens(createLens(mgl), lensTarget);
 
 		// el boot jamás se cuelga en silencio: si los assets no llegan, fuera
 		const deadline = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout de assets')), 10000));
@@ -111,8 +111,8 @@ export async function init({ centerline, loop, cssBridge }) {
 				applyProfile();              // pone env.domText = true
 				bridge.measure();
 				layer.setProgram(mgl.createProgram(VERT, frag(true)));
-				layer.setLens(null, null);   // LITE: sin lente global
-				lensTarget = null;
+				// se mantiene la lente (identidad en LITE): el FBO arregla la
+				// card de color; solo se quita el fisheye visual
 				layer.rebuildLabels(bridge.env.sx); // anula labels GL
 				bridge.on();                 // reaplica .gl-on + añade .gl-lite (texto DOM)
 				ticker.renderOnce();
@@ -139,10 +139,8 @@ export async function init({ centerline, loop, cssBridge }) {
 			layer = createCardsLayer(mgl, bridge, videoFeed);
 			layer.initCards();
 			layer.setProgram(mgl.createProgram(VERT, frag(profileName === 'LITE')));
-			if (profileName === 'FULL') {
-				lensTarget = mgl.createTarget(bridge.env.bufferW, bridge.env.bufferH);
-				layer.setLens(createLens(mgl), lensTarget);
-			}
+			lensTarget = mgl.createTarget(bridge.env.bufferW, bridge.env.bufferH);
+			layer.setLens(createLens(mgl), lensTarget);
 			const [g] = await Promise.all([makeGrainTexture(mgl)]);
 			layer.setStatic(g, makeNoiseTexture(mgl));
 			await layer.buildTextures(bridge.env.sx);

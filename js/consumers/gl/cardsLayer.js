@@ -140,7 +140,11 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 		// lente global activa → las cards se componen a un FBO y luego un
 		// pase de warp las dibuja curvadas a pantalla. amount 0 → ruta directa
 		const splitW = overrides.split > 0 ? Math.round(env.bufferW / 2) : 0;
-		const useLens = lens && target && Math.abs(config.fisheye?.amount ?? 0) > 0.001;
+		// SIEMPRE por el FBO cuando hay lente: la ruta directa a pantalla
+		// dejaba invisible la card de color sólido (sin media) en algunos
+		// setups/GPU pese a dibujarse. El FBO+lente (passthrough exacto con
+		// amount 0) es la ruta probada. En LITE la lente va a identidad.
+		const useLens = !!(lens && target);
 		if (useLens) {
 			mgl.bindTarget(target);
 			mgl.frame(env.bufferW, env.bufferH); // limpia el FBO; el split se aplica en el pase de lente
@@ -273,8 +277,12 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 		}
 		mgl.setScissor(null);
 
-		// pase de lente global: la escena del FBO → pantalla, curvada
-		if (useLens) lens.draw(target, config.fisheye, splitW);
+		// pase de lente global: la escena del FBO → pantalla. En LITE (móvil)
+		// la lente va a identidad (sin fisheye, pero arregla la card de color)
+		if (useLens) {
+			const fish = env.domText ? { amount: 0, start: config.fisheye?.start ?? 0.35 } : config.fisheye;
+			lens.draw(target, fish, splitW);
+		}
 	}
 
 	return {
