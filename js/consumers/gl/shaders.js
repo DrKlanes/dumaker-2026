@@ -31,6 +31,7 @@ uniform vec2 uQuad;      // px del quad (incluye margen)
 uniform float uMargin;   // px de margen para el temblor
 uniform float uK;        // curva(absDist) con velocidad integrada
 uniform float uHasMedia;
+uniform float uHasLabel;  // 0 en LITE: el texto va por DOM, no por textura
 uniform float uIsText;   // card 00
 uniform float uHide;     // focus-reveal: no pintar
 uniform vec3 uBg;        // fondo card texto
@@ -127,9 +128,11 @@ void main() {
 		float ga = 1.0 - smoothstep(0.0, 0.466, t);
 		col = mix(col, vec3(0.0392, 0.0353, 0.0314), ga); // #0a0908
 	}
-	vec4 lab = texture(uLabel, clamp(suv, 0.0, 1.0));
-	lab.a *= inX;
-	col = mix(col, lab.rgb, lab.a);
+	if (uHasLabel > 0.5) {
+		vec4 lab = texture(uLabel, clamp(suv, 0.0, 1.0));
+		lab.a *= inX;
+		col = mix(col, lab.rgb, lab.a);
+	}
 
 	// ── CAPA 1: tinte rojo multiply — el rojo se come la luz ──────────
 	float kt = k * uTintAmount * mix(1.0, uTintText, uIsText);

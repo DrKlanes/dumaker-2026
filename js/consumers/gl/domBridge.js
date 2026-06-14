@@ -13,6 +13,15 @@ const STYLE = `
 .strip--cards.gl-on .card.gl-reveal .card__sub { opacity: 1; }
 .strip--cards.gl-on .card--texto.gl-reveal { background: var(--red); }
 .gl-canvas { position: absolute; z-index: 10; pointer-events: none; }
+/* Perfil LITE (móvil/tablet): el texto NO se rasteriza a textura — se
+   pinta como DOM nítido a densidad nativa, por encima del canvas del
+   efecto. media+grano+tinte siguen en la GL downscaleada. */
+.strip--cards.gl-on.gl-lite .card__title,
+.strip--cards.gl-on.gl-lite .card__sub {
+	opacity: 1;
+	position: relative;
+	z-index: 11;
+}
 `;
 
 export function createDomBridge({ onLayout, onFocusReveal }) {
@@ -44,6 +53,7 @@ export function createDomBridge({ onLayout, onFocusReveal }) {
 		dprCap: 2,
 		scale: 1,
 		centralCopy: 2,
+		domText: false,   // LITE: el texto se pinta en DOM, no como textura GL
 	};
 
 	function instance(i) {
@@ -135,11 +145,14 @@ export function createDomBridge({ onLayout, onFocusReveal }) {
 		canvas,
 		instance,
 		measure,
-		on: () => strip.classList.add('gl-on'),
+		on: () => {
+			strip.classList.add('gl-on');
+			strip.classList.toggle('gl-lite', !!env.domText);
+		},
 		off: () => strip.classList.remove('gl-on'),
 		isOn: () => strip.classList.contains('gl-on'),
 		destroy() {
-			strip.classList.remove('gl-on');
+			strip.classList.remove('gl-on', 'gl-lite');
 			canvas.remove();
 			style.remove();
 		},

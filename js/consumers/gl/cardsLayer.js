@@ -65,7 +65,8 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 	async function buildTextures(labelScale) {
 		await Promise.all(cards.map(async (c) => {
 			const el = bridge.instance(c.index);
-			c.labelTex = rasterizeLabel(mgl, el, labelScale);
+			// LITE: el texto va por DOM (nítido) — no se rasteriza ni sube
+			c.labelTex = env.domText ? null : rasterizeLabel(mgl, el, labelScale);
 			if (c.hasMedia && !c.isClip) {
 				c.mediaTex = await loadMediaTexture(mgl, el);
 				if (!c.mediaTex) c.hasMedia = false;
@@ -82,8 +83,14 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 		}
 	}
 
-	// re-raster de labels (resize, cambio de dPR/zoom, demote de perfil)
+	// re-raster de labels (resize, cambio de dPR/zoom). En LITE no hay
+	// textura de label: se anulan (el texto va por DOM) y el shader deja
+	// de samplearlas (uHasLabel = 0). Cubre el demote FULL→LITE en runtime.
 	function rebuildLabels(scale) {
+		if (env.domText) {
+			for (const c of cards) c.labelTex = null;
+			return;
+		}
 		for (const c of cards) {
 			const el = bridge.instance(c.index);
 			if (el) c.labelTex = rasterizeLabel(mgl, el, scale);
@@ -95,7 +102,8 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 		return snapshot.cards.every((sc) => {
 			const c = cards[sc.index];
 			if (!c || sc.absDist > visLimit + 1) return true;
-			return c.labelTex && (!c.hasMedia || c.isClip || c.mediaTex?.ready);
+			const labelOK = env.domText || c.labelTex;
+			return labelOK && (!c.hasMedia || c.isClip || c.mediaTex?.ready);
 		});
 	}
 
@@ -220,6 +228,7 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 			prog.u1i('uMedia', 0);
 			if (c.labelTex) mgl.bind(c.labelTex, 1);
 			prog.u1i('uLabel', 1);
+			prog.u1f('uHasLabel', c.labelTex ? 1 : 0); // LITE: 0 (texto por DOM)
 			prog.u2f('uCoverS', c.cover.s[0], c.cover.s[1]);
 			prog.u2f('uCoverO', c.cover.o[0], c.cover.o[1]);
 

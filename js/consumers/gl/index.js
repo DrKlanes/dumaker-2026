@@ -15,6 +15,9 @@ export async function init({ centerline, loop, cssBridge }) {
 	const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 	let profileName = matchMedia('(pointer: coarse)').matches ? 'LITE' : 'FULL';
+	// override de desarrollo: ?profile=lite|full (probar el look móvil en desktop)
+	const forced = new URLSearchParams(location.search).get('profile');
+	if (forced === 'lite' || forced === 'full') profileName = forced.toUpperCase();
 	let mgl = null;
 	let layer = null;
 	let ticker = null;
@@ -38,6 +41,8 @@ export async function init({ centerline, loop, cssBridge }) {
 		const p = config.profiles[profileName];
 		bridge.env.dprCap = p.dprCap;
 		bridge.env.scale = p.scale;
+		// LITE: el texto sale de la GL y se pinta como DOM nítido
+		bridge.env.domText = profileName === 'LITE';
 	}
 
 	function teardown() {
@@ -92,10 +97,12 @@ export async function init({ centerline, loop, cssBridge }) {
 		if (profileName === 'FULL') {
 			profileName = 'LITE';
 			try {
-				applyProfile();
+				applyProfile();              // pone env.domText = true
 				bridge.measure();
 				layer.setProgram(mgl.createProgram(VERT, frag(true)));
-				layer.rebuildLabels(bridge.env.sx);
+				layer.rebuildLabels(bridge.env.sx); // anula labels GL
+				bridge.on();                 // reaplica .gl-on + añade .gl-lite (texto DOM)
+				ticker.renderOnce();
 				console.warn('gl: degradada a LITE (fps sostenidos < 45)');
 			} catch {
 				teardown();
