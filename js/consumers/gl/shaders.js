@@ -144,18 +144,9 @@ void main() {
 	c *= 1.0 - ktc * uTintDarken * 0.35;
 	col = (uSrgb > 0.5) ? c : pow(c, vec3(1.0 / 2.2));
 
-	// ── CAPA 2: grano reactivo — el base de Fase 1, agravándose ───────
-	float kg = k;
-#ifdef LITE
-	float h = hash12(px + uGrainSeed * 517.0) - 0.5;
-	col += h * (uGrainAmount + uGrainBoost) * kg * 0.4;
-#else
-	vec2 gpx = px / uGrainSize;
-	float speck = texture(uGrain, gpx / 256.0 + uGrainSeed).a;
-	col += speck * uGrainAmount * kg * 0.55;
-	float h = hash12(px + uGrainSeed * 517.0) - 0.5;
-	col += h * uGrainBoost * kg * 0.35;
-#endif
+	// ── CAPA 2: grano reactivo — MOVIDO al pase de lente (lens.js) ────
+	// Se aplica en screen-space DESPUÉS del warp para que el fisheye no
+	// estire los puntos de grano en vetas. uGrain/uGrain* ya no se usan aquí.
 
 	o = vec4(clamp(col, 0.0, 1.0) * alpha, alpha); // premultiplied
 }`;

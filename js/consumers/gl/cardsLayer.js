@@ -170,10 +170,6 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 		prog.u1f('uTintGamma', config.tint.gamma);
 		prog.u1f('uTintText', config.tint.textCard);
 		prog.u1f('uSrgb', config.tint.srgb);
-		prog.u1f('uGrainAmount', config.grain.amount);
-		prog.u1f('uGrainBoost', config.grain.boost);
-		prog.u1f('uGrainSize', config.grain.size);
-		prog.u2f('uGrainSeed', timing.grainSeed[0], timing.grainSeed[1]);
 		prog.u1f('uGlitchAmount', config.glitch.amount);
 		prog.u1f('uRollAmp', config.glitch.roll);
 		prog.u1f('uRollPhase', timing.rollPhase);
@@ -181,9 +177,7 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 		prog.u1f('uTremFreq', config.tremor.freq);
 		prog.u1f('uTremPhase', timing.tremorPhase);
 		prog.u1f('uMargin', env.margin * sx);
-		if (grainTex) mgl.bind(grainTex, 2);
-		if (noiseTex) mgl.bind(noiseTex, 3);
-		prog.u1i('uGrain', 2);
+		if (noiseTex) mgl.bind(noiseTex, 3); // tremor; el grano vive ahora en la lente
 		prog.u1i('uNoise', 3);
 
 		const trackW = env.rect.width;
@@ -276,11 +270,18 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 		}
 		mgl.setScissor(null);
 
-		// pase de lente global: la escena del FBO → pantalla. En LITE (móvil)
-		// la lente va a identidad (sin fisheye, pero arregla la card de color)
+		// pase de lente global: la escena del FBO → pantalla, + grano
+		// screen-space (tras el warp, sin estiramiento). En LITE (móvil) la
+		// lente va a identidad de curvatura, pero el grano sí se aplica.
 		if (useLens) {
 			const fish = env.domText ? { amount: 0, start: config.fisheye?.start ?? 0.35 } : config.fisheye;
-			lens.draw(target, fish, splitW);
+			lens.draw(target, fish, splitW, {
+				grainTex,
+				grain: config.grain,
+				curve: config.curve,
+				grainSeed: timing.grainSeed,
+				velBoost,
+			});
 		}
 	}
 
