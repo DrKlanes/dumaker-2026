@@ -1,10 +1,25 @@
-// Pase de lente GLOBAL (ojo de pez de pantalla) + grano reactivo
-// screen-space. Toma la escena ya compuesta (cards en el FBO), la
-// muestrea con un remapeo barrel (centro plano, curvatura hacia los
-// filos), y DESPUÉS espolvorea el grano sobre el píxel ya curvado — así
-// el warp no estira los puntos de grano en vetas.
-// Screen-space → anclado al viewport por construcción (filo = x=±1).
-// amount=0 → curvatura identidad (el grano sigue aplicándose).
+// ═══════════════════════════════════════════════════════════════════
+// PASE DE LENTE GLOBAL (pase 2) — fisheye de pantalla + grano reactivo.
+// Toma la escena ya compuesta (todas las cards en el FBO del pase 1) y:
+//   1) la muestrea con un remapeo barrel (centro plano, curvatura hacia
+//      los filos del viewport) — el OJO DE PEZ.
+//   2) espolvorea el GRANO sobre el píxel ya curvado (screen-space, tras
+//      el warp) — así el fisheye no estira los puntos en vetas.
+//
+// CONTRATO / INTERFAZ (para intercambiar/mejorar este pase en aislado):
+//   Entrada:  target.color = textura del FBO con la escena compuesta.
+//   Lo alimenta: cardsLayer.render → lens.draw(target, fisheye, splitW, gx).
+//     · fisheye = preset.fisheye {amount, start, squeeze}
+//     · gx = { grainTex, grain(preset.grain), curve(preset.curve),
+//              grainSeed (reloj de grano), velBoost (velocidad suavizada) }
+//   Señales del contrato (vía gx): grainSeed y velBoost vienen del ticker;
+//     la curva permite reconstruir el k per-card como función de pantalla
+//     (k = curveK(|nx|·edgeRef)), que es la misma graduación anclada al
+//     viewport que usa el pase por-card.
+//   TODOS los valores de look vienen de preset.json; sin hardcode aquí.
+//   amount=0 → curvatura identidad (passthrough); el grano sigue aplicándose.
+//   Screen-space → anclado al viewport por construcción (filo = x=±1).
+// ═══════════════════════════════════════════════════════════════════
 
 const VERT = `#version 300 es
 in vec2 aPos;
@@ -22,6 +37,7 @@ uniform sampler2D uScene;
 uniform sampler2D uGrain;   // PNG speckle de Fase 1 (REPEAT)
 uniform float uAmount;  // curvatura. SIGNO = dirección: >0 afuera, <0 adentro
 uniform float uStart;   // radio del centro plano (0..1 en x)
+uniform float uSqueeze; // compresión horizontal de la lente (preset.fisheye.squeeze)
 uniform vec2 uRes;      // px del buffer (grano a tamaño de pantalla)
 // grano reactivo (screen-space)
 uniform float uGrainAmount;
@@ -48,15 +64,17 @@ void main() {
 	float nx = c.x * 2.0;                          // -1..1 horizontal
 	float w = smoothstep(uStart, 1.0, abs(nx));    // 0 centro -> 1 filo
 	float bend = uAmount * w;
-	// arqueo de la fila (barrel) + leve compresión horizontal
+	// CAPA 5 (fisheye): arqueo de la fila (barrel) + compresión horizontal
 	vec2 src;
 	src.y = 0.5 + (vUv.y - 0.5) * (1.0 + bend);
-	src.x = 0.5 + (vUv.x - 0.5) * (1.0 - bend * 0.18);
+	src.x = 0.5 + (vUv.x - 0.5) * (1.0 - bend * uSqueeze);
 	vec4 col = texture(uScene, src);               // CLAMP: margen transparente
 	if (col.a < 0.004) { o = col; return; }        // hueco: nada de grano
 
-	// ── grano reactivo en ESPACIO DE PANTALLA (tras el warp) ──────────
-	// intensidad anclada al viewport: gradeDist = |nx|·edgeRef (= per-card)
+	// ── CAPA 2: grano reactivo en ESPACIO DE PANTALLA (tras el warp) ──
+	// intensidad anclada al viewport: gradeDist = |nx|·edgeRef (= per-card).
+	// 256 = tamaño del tile PNG; 517 = decorrelación del hash; 0.55/0.35 =
+	// escala interna de grain.amount/boost (estructurales, no son knobs).
 	float kg = curveK(abs(nx) * uEdgeRef) * (1.0 + uVel);
 	vec2 spx = vUv * uRes;
 	float speck = texture(uGrain, spx / (uGrainSize * 256.0) + uGrainSeed).a;
@@ -80,6 +98,7 @@ export function createLens(mgl) {
 			prog.u1i('uScene', 0);
 			prog.u1f('uAmount', fisheye?.amount ?? 0);
 			prog.u1f('uStart', fisheye?.start ?? 0.35);
+			prog.u1f('uSqueeze', fisheye?.squeeze ?? 0.18);
 			prog.u2f('uRes', target.w, target.h);
 			if (gx?.grainTex) {
 				mgl.bind(gx.grainTex, 1);

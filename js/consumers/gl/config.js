@@ -34,11 +34,13 @@ export const SCHEMA = [
 	['grain.clockFps', 2, 30, 1],
 	['glitch.amount', 0, 2, 0.01], ['glitch.bandRate', 0, 8, 0.1], ['glitch.bandMaxH', 0, 0.2, 0.005],
 	['glitch.bandMaxOff', 0, 0.15, 0.002], ['glitch.bandTtl', 0.03, 1, 0.01],
-	['glitch.roll', 0, 3, 0.05], ['glitch.rollSpeed', 0, 4, 0.05],
+	['glitch.roll', 0, 3, 0.05], ['glitch.rollSpeed', 0, 4, 0.05], ['glitch.rollWave', 0, 10, 0.1],
 	['tremor.amount', 0, 9, 0.1], ['tremor.freq', 5, 200, 1], ['tremor.speed', 0, 30, 0.5],
+	['tremor.edgeAA', 0.1, 3, 0.05],
 	['velocity.gain', 0, 2, 0.01], ['velocity.cap', 0, 3, 0.05],
 	['velocity.tauUp', 0.01, 0.5, 0.01], ['velocity.tauDown', 0.05, 2, 0.01], ['velocity.norm', 200, 6000, 50],
-	['fisheye.amount', -1, 1, 0.005], ['fisheye.start', 0, 1, 0.01],
+	['fisheye.amount', -1, 1, 0.005], ['fisheye.start', 0, 1, 0.01], ['fisheye.squeeze', 0, 1, 0.005],
+	['gradient.angleDeg', 0, 360, 0.5], ['gradient.extent', 0.05, 1, 0.005],
 	['idle.sleepVel', 0.1, 20, 0.1], ['idle.sleepAfterMs', 500, 20000, 100],
 ];
 

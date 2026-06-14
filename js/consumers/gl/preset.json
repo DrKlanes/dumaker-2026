@@ -2,18 +2,20 @@
 	"_meta": {
 		"nombre": "dumaker-efecto-firma",
 		"version": "v3-fisheye-inverso",
-		"estado": "provisional — pendiente de validar el carácter en 4 anchuras. Fisheye inverso (amount -1, hacia afuera, inmersivo), start 0.31 (centro plano amplio), velocity.gain 1.56. Grano YA en screen-space (sin vetas con el fisheye).",
+		"estado": "Carácter APROBADO por Moisés (no tocar valores). Todos los knobs ajustables viven aquí; el shader no tiene valores de look hardcodeados (solo coeficientes internos y matemática estructural, comentados en shaders.js/lens.js).",
 		"fecha": "2026-06-14",
 		"caracter": "Curva larga casi lineal (vecinos legibles). Temblor fino y nervioso. Glitch protagonista, grano vivo. La velocidad es el centro del gesto. Ojo de pez inverso (extremos hacia afuera) para sensación de carrusel inmersivo. Graduación anclada al borde del viewport (curve.edgeRef).",
-		"comoEditar": "ÚNICA fuente de verdad del efecto. La web lo carga al arrancar. Para cambiarlo: ajusta en ?gl=debug, pulsa 'export' o 'descargar preset.json' y reemplaza este archivo (conserva este _meta). 'import' aplica un JSON en vivo sin tocar el archivo."
+		"comoEditar": "ÚNICA fuente de verdad del efecto. La web lo carga al arrancar. Para cambiarlo: ajusta en ?gl=debug, pulsa 'export' o 'descargar preset.json' y reemplaza este archivo (conserva este _meta). 'import' aplica un JSON en vivo sin tocar el archivo. Colores en [r,g,b] 0..1."
 	},
 	"curve": { "start": 0.23, "end": 2.44, "power": 1.05, "edgeRef": 1.6 },
 	"tint": { "color": [1, 0, 0], "amount": 1.08, "darken": 0.39, "gamma": 1.53, "textCard": 0.45, "srgb": 1 },
 	"grain": { "amount": 0.77, "boost": 0.38, "size": 1, "clockFps": 16 },
-	"glitch": { "amount": 1.27, "bandRate": 3.2, "bandMaxH": 0.04, "bandMaxOff": 0.04, "bandTtl": 0.18, "roll": 1.05, "rollSpeed": 0.55 },
-	"tremor": { "amount": 1.6, "freq": 200, "speed": 23.5 },
+	"glitch": { "amount": 1.27, "bandRate": 3.2, "bandMaxH": 0.04, "bandMaxOff": 0.04, "bandTtl": 0.18, "roll": 1.05, "rollSpeed": 0.55, "rollWave": 2.4, "holeColor": [0.02, 0.018, 0.016] },
+	"tremor": { "amount": 1.6, "freq": 200, "speed": 23.5, "edgeAA": 0.75 },
 	"velocity": { "gain": 1.56, "cap": 1.2, "tauUp": 0.12, "tauDown": 0.4, "norm": 2200 },
-	"fisheye": { "amount": -1, "start": 0.31 },
+	"fisheye": { "amount": -1, "start": 0.31, "squeeze": 0.18 },
+	"gradient": { "angleDeg": 46.5, "color": [0.0392, 0.0353, 0.0314], "extent": 0.466 },
+	"bgColor": [0.9529, 0, 0.0157],
 	"idle": { "sleepVel": 1.5, "sleepAfterMs": 2900 },
 	"profiles": { "FULL": { "dprCap": 2, "scale": 1 }, "LITE": { "dprCap": 1, "scale": 0.75 } },
 	"margin": 10

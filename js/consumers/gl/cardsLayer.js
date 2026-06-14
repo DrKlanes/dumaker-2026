@@ -3,7 +3,8 @@
 import { config } from './config.js';
 import { coverMapping, loadMediaTexture, rasterizeLabel, makeSolidTexture } from './textures.js';
 
-const GRAD_DEG = 46.5; // gradiente de legibilidad exacto de Figma
+// helper: color [r,g,b] 0..1 de preset.json → bytes [r,g,b,255] para textura
+const rgb255 = (c) => [Math.round(c[0] * 255), Math.round(c[1] * 255), Math.round(c[2] * 255), 255];
 
 function mulberry32(seed) {
 	return function () {
@@ -70,9 +71,9 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 			// LITE: el texto va por DOM (nítido) — no se rasteriza ni sube
 			c.labelTex = env.domText ? null : rasterizeLabel(mgl, el, labelScale);
 			if (c.isText) {
-				// fondo sólido rojo como textura 1×1 → MISMO camino que las
-				// imágenes (sin rama especial uBg). #f30004
-				c.mediaTex = makeSolidTexture(mgl, [243, 0, 4, 255]);
+				// fondo sólido como textura 1×1 → MISMO camino que las
+				// imágenes (sin rama especial uBg). Color desde preset.bgColor.
+				c.mediaTex = makeSolidTexture(mgl, rgb255(config.bgColor));
 				c.hasMedia = true;
 				c.cover = { s: [1, 1], o: [0, 0] }; // 1×1 sólido: cualquier UV = rojo
 			} else if (c.hasMedia && !c.isClip) {
@@ -170,12 +171,18 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 		prog.u1f('uTintGamma', config.tint.gamma);
 		prog.u1f('uTintText', config.tint.textCard);
 		prog.u1f('uSrgb', config.tint.srgb);
+		prog.u3f('uBg', ...config.bgColor);
+		prog.u3f('uHoleColor', ...config.glitch.holeColor);
+		prog.u3f('uGradColor', ...config.gradient.color);
+		prog.u1f('uGradExtent', config.gradient.extent);
 		prog.u1f('uGlitchAmount', config.glitch.amount);
 		prog.u1f('uRollAmp', config.glitch.roll);
 		prog.u1f('uRollPhase', timing.rollPhase);
+		prog.u1f('uRollWave', config.glitch.rollWave);
 		prog.u1f('uTremAmp', config.tremor.amount);
 		prog.u1f('uTremFreq', config.tremor.freq);
 		prog.u1f('uTremPhase', timing.tremorPhase);
+		prog.u1f('uTremAA', config.tremor.edgeAA);
 		prog.u1f('uMargin', env.margin * sx);
 		if (noiseTex) mgl.bind(noiseTex, 3); // tremor; el grano vive ahora en la lente
 		prog.u1i('uNoise', 3);
@@ -192,8 +199,8 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 		const halfCap = (trackW / 2) / env.slotW;
 		const edgeScale = halfCap > 0 ? config.curve.edgeRef / halfCap : 1;
 
-		// gradiente (depende solo del tamaño de card)
-		const a = (GRAD_DEG * Math.PI) / 180;
+		// gradiente de legibilidad (ángulo desde preset.gradient.angleDeg)
+		const a = (config.gradient.angleDeg * Math.PI) / 180;
 		const d = [Math.sin(a), -Math.cos(a)]; // uv y-abajo
 		const L = Math.abs(env.cardW * d[0]) + Math.abs(env.cardH * d[1]);
 		const gradDir = [d[0] * env.cardW, d[1] * env.cardH];
@@ -229,7 +236,6 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 			prog.u1f('uHide', c.hide ? 1 : 0);
 			prog.u1f('uHasMedia', c.hasMedia ? 1 : 0);
 			prog.u1f('uIsText', c.isText ? 1 : 0);
-			prog.u3f('uBg', 0.9529, 0.0, 0.0157); // #f30004 (fallback si falla la media)
 			prog.u1f('uGradOn', c.isText ? 0 : 1); // la card de texto nunca lleva gradiente
 			prog.u2f('uGradOrigin', 0, 1);
 			prog.u3f('uGradDir', gradDir[0], gradDir[1], 1 / L);
