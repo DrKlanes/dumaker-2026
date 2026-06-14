@@ -205,7 +205,7 @@ export function mount({ layer, ticker, bridge, centerline }) {
 
 	// ── HUD de frame-time ──
 	const hud = document.createElement('div');
-	hud.style.cssText = 'margin-top:8px;color:#888';
+	hud.style.cssText = 'margin-top:8px;color:#888;white-space:pre-wrap';
 	root.append(hud);
 	let frames = 0;
 	let acc = 0;
@@ -216,6 +216,7 @@ export function mount({ layer, ticker, bridge, centerline }) {
 		last = now;
 		if (++frames >= 30) {
 			hud.textContent = `${(1000 / (acc / frames)).toFixed(0)} fps · ${(acc / frames).toFixed(1)} ms · ${ticker.getState()} · vel ${ticker.getVel().toFixed(0)}`;
+			hud.textContent += `\nlens:${layer.diag?.useLens} · card00: ${layer.diag?.c0 ?? '?'}`;
 			frames = 0;
 			acc = 0;
 		}

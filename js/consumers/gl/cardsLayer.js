@@ -133,6 +133,7 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 	}
 
 	const bandData = new Float32Array(24);
+	const diag = { useLens: false, c0: 'init' }; // diagnóstico temporal card 00
 
 	function render(snapshot, timing) {
 		const { sx } = env;
@@ -189,6 +190,8 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 		// slots físicos (posicionamiento, vídeo, culling intactos).
 		const halfCap = (trackW / 2) / env.slotW;
 		const edgeScale = halfCap > 0 ? config.curve.edgeRef / halfCap : 1;
+		diag.useLens = useLens;
+		diag.c0 = 'no-en-snapshot';
 
 		// gradiente (depende solo del tamaño de card)
 		const a = (GRAD_DEG * Math.PI) / 180;
@@ -198,6 +201,7 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 
 		for (const sc of snapshot.cards) {
 			const c = cards[sc.index];
+			if (sc.index === 0) diag.c0 = !c ? 'sin-entrada' : `dist=${sc.dist.toFixed(2)} cull=${Math.abs(sc.dist) > visLimit} hide=${c.hide} media=${c.hasMedia} label=${!!c.labelTex}`;
 			if (!c) continue;
 			if (Math.abs(sc.dist) > visLimit) continue;
 			// override del panel = fuerza el input de curva directo (preview
@@ -264,6 +268,7 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 			prog.u4fv('uBands', bandData);
 			prog.u1i('uBandCount', n);
 
+			if (sc.index === 0) diag.c0 += ` → DIBUJADA x=${Math.round(x)} w=${Math.round(w)} k=${k.toFixed(2)}`;
 			mgl.drawQuad();
 		}
 		mgl.setScissor(null);
@@ -275,6 +280,7 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 	return {
 		cards,
 		overrides,
+		diag,
 		setLens(l, t) { lens = l; target = t; },
 		initCards,
 		buildTextures,
