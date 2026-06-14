@@ -21,7 +21,7 @@
 			"asset": "assets/cards/ilustracion.webp",
 			"poster": null,
 			"alt": "Ilustración de una criatura verde emergiendo del agua",
-			"href": null,
+			"href": "https://www.deviantart.com/dumaker/gallery",
 			"newTab": true
 		},
 		{
@@ -82,13 +82,13 @@
 		{
 			"id": "escenas-vr",
 			"title": "Escenas VR",
-			"template": "poster",
+			"template": "clip",
 			"subtitle": "escenas en realidad virtual",
-			"asset": "assets/cards/diorame.webp",
+			"asset": "assets/cards/escenas_vr.mp4",
 			"poster": null,
-			"alt": "Imagen provisional de Escenas VR",
-			"href": null,
-			"newTab": false
+			"alt": "Vídeo de Escenas VR",
+			"href": "https://www.behance.net/gallery/142865257/Escenas-ilustradas-inmersivas-para-realidad-virtual",
+			"newTab": true
 		},
 		{
 			"id": "lab",
