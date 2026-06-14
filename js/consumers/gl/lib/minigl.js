@@ -109,6 +109,37 @@ export function createGL(canvas) {
 		gl.clear(gl.COLOR_BUFFER_BIT);
 	}
 
+	// render target (FBO + textura de color) para el pase de lente global
+	function createTarget(w, h) {
+		const fbo = gl.createFramebuffer();
+		const color = createTexture({ filter: gl.LINEAR, wrap: gl.CLAMP_TO_EDGE });
+		const t = { fbo, color, w: 0, h: 0 };
+		resizeTarget(t, w, h);
+		return t;
+	}
+
+	function resizeTarget(t, w, h) {
+		if (t.w === w && t.h === h) return;
+		gl.bindTexture(gl.TEXTURE_2D, t.color.tex);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+		t.color.w = w;
+		t.color.h = h;
+		t.color.ready = true;
+		gl.bindFramebuffer(gl.FRAMEBUFFER, t.fbo);
+		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t.color.tex, 0);
+		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+		t.w = w;
+		t.h = h;
+	}
+
+	function bindTarget(t) {
+		gl.bindFramebuffer(gl.FRAMEBUFFER, t.fbo);
+	}
+
+	function bindScreen() {
+		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+	}
+
 	function drawQuad() {
 		gl.bindVertexArray(vao);
 		gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -124,5 +155,8 @@ export function createGL(canvas) {
 		}
 	}
 
-	return { gl, createProgram, createTexture, upload, uploadData, bind, frame, drawQuad, setScissor };
+	return {
+		gl, createProgram, createTexture, upload, uploadData, bind, frame, drawQuad, setScissor,
+		createTarget, resizeTarget, bindTarget, bindScreen,
+	};
 }

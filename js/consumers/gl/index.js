@@ -6,6 +6,7 @@ import { createGL } from './lib/minigl.js';
 import { VERT, frag } from './shaders.js';
 import { createDomBridge } from './domBridge.js';
 import { createCardsLayer } from './cardsLayer.js';
+import { createLens } from './lens.js';
 import { createTicker } from './ticker.js';
 import { makeNoiseTexture, makeGrainTexture, createVideoFeed, loadLabelFonts } from './textures.js';
 
@@ -21,10 +22,12 @@ export async function init({ centerline, loop, cssBridge }) {
 	let mgl = null;
 	let layer = null;
 	let ticker = null;
+	let lensTarget = null; // FBO de la escena para el pase de lente global
 
 	const bridge = createDomBridge({
 		onLayout() {
 			if (!layer) return;
+			if (lensTarget && mgl) mgl.resizeTarget(lensTarget, bridge.env.bufferW, bridge.env.bufferH);
 			layer.refreshCovers();
 			layer.rebuildLabels(bridge.env.sx);
 			ticker?.renderOnce();
@@ -65,6 +68,13 @@ export async function init({ centerline, loop, cssBridge }) {
 		let prog = mgl.createProgram(VERT, frag(profileName === 'LITE'));
 		layer.setProgram(prog);
 
+		// lente global (ojo de pez): solo perfil FULL — en LITE el texto es
+		// DOM y no podría curvarse con su card, y móvil muestra ~1 card plana
+		if (profileName === 'FULL') {
+			lensTarget = mgl.createTarget(bridge.env.bufferW, bridge.env.bufferH);
+			layer.setLens(createLens(mgl), lensTarget);
+		}
+
 		// el boot jamás se cuelga en silencio: si los assets no llegan, fuera
 		const deadline = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout de assets')), 10000));
 		const [grainTex] = await Promise.race([
@@ -101,6 +111,8 @@ export async function init({ centerline, loop, cssBridge }) {
 				applyProfile();              // pone env.domText = true
 				bridge.measure();
 				layer.setProgram(mgl.createProgram(VERT, frag(true)));
+				layer.setLens(null, null);   // LITE: sin lente global
+				lensTarget = null;
 				layer.rebuildLabels(bridge.env.sx); // anula labels GL
 				bridge.on();                 // reaplica .gl-on + añade .gl-lite (texto DOM)
 				ticker.renderOnce();
@@ -127,6 +139,10 @@ export async function init({ centerline, loop, cssBridge }) {
 			layer = createCardsLayer(mgl, bridge, videoFeed);
 			layer.initCards();
 			layer.setProgram(mgl.createProgram(VERT, frag(profileName === 'LITE')));
+			if (profileName === 'FULL') {
+				lensTarget = mgl.createTarget(bridge.env.bufferW, bridge.env.bufferH);
+				layer.setLens(createLens(mgl), lensTarget);
+			}
 			const [g] = await Promise.all([makeGrainTexture(mgl)]);
 			layer.setStatic(g, makeNoiseTexture(mgl));
 			await layer.buildTextures(bridge.env.sx);

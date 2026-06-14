@@ -20,6 +20,8 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 	let prog = null;
 	let grainTex = null;
 	let noiseTex = null;
+	let lens = null;     // pase de lente global (ojo de pez); null = directo a pantalla
+	let target = null;   // FBO donde se compone la escena antes del warp
 	let seed = 1234;
 	let rng = mulberry32(seed);
 	const overrides = { absDist: null, velocity: null, fx: 1, split: 0 };
@@ -134,11 +136,19 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 
 	function render(snapshot, timing) {
 		const { sx } = env;
-		mgl.frame(env.bufferW, env.bufferH);
-		if (overrides.split > 0) {
-			mgl.setScissor(0, 0, Math.round(env.bufferW / 2), env.bufferH);
-		} else {
+		// lente global activa → las cards se componen a un FBO y luego un
+		// pase de warp las dibuja curvadas a pantalla. amount 0 → ruta directa
+		const splitW = overrides.split > 0 ? Math.round(env.bufferW / 2) : 0;
+		const useLens = lens && target && (config.fisheye?.amount ?? 0) > 0.001;
+		if (useLens) {
+			mgl.bindTarget(target);
+			mgl.frame(env.bufferW, env.bufferH); // limpia el FBO; el split se aplica en el pase de lente
 			mgl.setScissor(null);
+		} else {
+			mgl.bindScreen();
+			mgl.frame(env.bufferW, env.bufferH);
+			if (splitW) mgl.setScissor(0, 0, splitW, env.bufferH);
+			else mgl.setScissor(null);
 		}
 		if (!prog) return;
 		prog.use();
@@ -257,11 +267,15 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 			mgl.drawQuad();
 		}
 		mgl.setScissor(null);
+
+		// pase de lente global: la escena del FBO → pantalla, curvada
+		if (useLens) lens.draw(target, config.fisheye, splitW);
 	}
 
 	return {
 		cards,
 		overrides,
+		setLens(l, t) { lens = l; target = t; },
 		initCards,
 		buildTextures,
 		refreshCovers,
