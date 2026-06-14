@@ -38,7 +38,7 @@ export const SCHEMA = [
 	['tremor.amount', 0, 9, 0.1], ['tremor.freq', 5, 200, 1], ['tremor.speed', 0, 30, 0.5],
 	['velocity.gain', 0, 2, 0.01], ['velocity.cap', 0, 3, 0.05],
 	['velocity.tauUp', 0.01, 0.5, 0.01], ['velocity.tauDown', 0.05, 2, 0.01], ['velocity.norm', 200, 6000, 50],
-	['fisheye.amount', 0, 1, 0.005], ['fisheye.start', 0, 1, 0.01],
+	['fisheye.amount', -1, 1, 0.005], ['fisheye.start', 0, 1, 0.01],
 	['idle.sleepVel', 0.1, 20, 0.1], ['idle.sleepAfterMs', 500, 20000, 100],
 ];
 

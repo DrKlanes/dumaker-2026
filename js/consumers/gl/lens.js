@@ -19,7 +19,9 @@ precision highp float;
 in vec2 vUv;
 out vec4 o;
 uniform sampler2D uScene;
-uniform float uAmount;  // intensidad de la curvatura
+uniform float uAmount;  // intensidad de la curvatura. SIGNO = dirección:
+                        //   >0 hacia afuera (agranda/abomba los extremos)
+                        //   <0 hacia adentro (clásico, reduce los extremos)
 uniform float uStart;   // radio del centro plano (0..1 en x): hasta aquí, sin distorsión
 
 void main() {

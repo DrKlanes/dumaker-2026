@@ -139,7 +139,7 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 		// lente global activa → las cards se componen a un FBO y luego un
 		// pase de warp las dibuja curvadas a pantalla. amount 0 → ruta directa
 		const splitW = overrides.split > 0 ? Math.round(env.bufferW / 2) : 0;
-		const useLens = lens && target && (config.fisheye?.amount ?? 0) > 0.001;
+		const useLens = lens && target && Math.abs(config.fisheye?.amount ?? 0) > 0.001;
 		if (useLens) {
 			mgl.bindTarget(target);
 			mgl.frame(env.bufferW, env.bufferH); // limpia el FBO; el split se aplica en el pase de lente
