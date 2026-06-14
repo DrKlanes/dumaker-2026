@@ -31,8 +31,8 @@ export function createTicker(centerline, layer, { onDemote, reduced }) {
 			tremorPhase += dt * config.tremor.speed;
 			rollPhase += dt * config.glitch.rollSpeed * Math.PI * 2;
 		}
-		const velBoost = Math.min(vel / config.velocity.norm, config.velocity.cap) * config.velocity.gain;
-		return { dt, now, grainSeed, tremorPhase, rollPhase, velBoost };
+		const velBoost = reduced ? 0 : Math.min(vel / config.velocity.norm, config.velocity.cap) * config.velocity.gain;
+		return { dt, now, grainSeed, tremorPhase, rollPhase, velBoost, reduced };
 	}
 
 	function updateVel(rawV, dt) {
@@ -53,6 +53,10 @@ export function createTicker(centerline, layer, { onDemote, reduced }) {
 		const t = timing(now);
 		updateVel(0, t.dt);
 		layer.render(centerline.getSnapshot(), t);
+		// reduced-motion: el grano es estático (semilla congelada) → un frame
+		// basta; no late el reloj de grano (frames idénticos). El panel de
+		// calibración (held) sí lo mantiene vivo para los sliders.
+		if (reduced && !held) { state = 'SLEEP'; return; }
 		idleClock = setTimeout(() => requestAnimationFrame(idleTick), 1000 / config.grain.clockFps);
 	}
 

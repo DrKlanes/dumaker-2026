@@ -141,6 +141,7 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 
 	function render(snapshot, timing) {
 		const { sx } = env;
+		const reduced = !!timing.reduced; // prefers-reduced-motion: sin glitch/temblor/velocidad
 		// lente global activa → las cards se componen a un FBO y luego un
 		// pase de warp las dibuja curvadas a pantalla. amount 0 → ruta directa
 		const splitW = overrides.split > 0 ? Math.round(env.bufferW / 2) : 0;
@@ -176,10 +177,10 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 		prog.u3f('uGradColor', ...config.gradient.color);
 		prog.u1f('uGradExtent', config.gradient.extent);
 		prog.u1f('uGlitchAmount', config.glitch.amount);
-		prog.u1f('uRollAmp', config.glitch.roll);
+		prog.u1f('uRollAmp', reduced ? 0 : config.glitch.roll); // sin rolling bajo reduced
 		prog.u1f('uRollPhase', timing.rollPhase);
 		prog.u1f('uRollWave', config.glitch.rollWave);
-		prog.u1f('uTremAmp', config.tremor.amount);
+		prog.u1f('uTremAmp', reduced ? 0 : config.tremor.amount); // sin temblor bajo reduced
 		prog.u1f('uTremFreq', config.tremor.freq);
 		prog.u1f('uTremPhase', timing.tremorPhase);
 		prog.u1f('uTremAA', config.tremor.edgeAA);
@@ -214,7 +215,7 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 			const gradeDist = overrides.absDist ?? (sc.absDist * edgeScale);
 
 			let k = curveK(gradeDist) * (1 + velBoost);
-			updateBands(c, Math.min(k, 1), timing.dt, timing.now);
+			if (!reduced) updateBands(c, Math.min(k, 1), timing.dt, timing.now); // sin bandas bajo reduced
 
 			// quad en px CSS del canvas (y luego a buffer con sx):
 			// posición desde el centro fraccional medido de la instancia
@@ -259,9 +260,9 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 			prog.u2f('uCoverS', c.cover.s[0], c.cover.s[1]);
 			prog.u2f('uCoverO', c.cover.o[0], c.cover.o[1]);
 
-			// bandas → uniform array
+			// bandas → uniform array (ninguna bajo reduced-motion)
 			let n = 0;
-			for (const b of c.bands) {
+			if (!reduced) for (const b of c.bands) {
 				if (n >= 6) break;
 				bandData[n * 4] = b.y;
 				bandData[n * 4 + 1] = b.h;
@@ -277,11 +278,12 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 		mgl.setScissor(null);
 
 		// pase de lente global: la escena del FBO → pantalla, + grano
-		// screen-space (tras el warp, sin estiramiento). En LITE (móvil) la
-		// lente va a identidad de curvatura, pero el grano sí se aplica.
+		// screen-space (tras el warp, sin estiramiento). El fisheye se aplica
+		// en TODOS los perfiles (incl. LITE/móvil): el FBO+pase ya corren, el
+		// warp es coste despreciable. En LITE el texto va por DOM (plano) sobre
+		// la card curvada — divergencia aceptada por diseño (validar en móvil).
 		if (useLens) {
-			const fish = env.domText ? { amount: 0, start: config.fisheye?.start ?? 0.35 } : config.fisheye;
-			lens.draw(target, fish, splitW, {
+			lens.draw(target, config.fisheye, splitW, {
 				grainTex,
 				grain: config.grain,
 				curve: config.curve,
