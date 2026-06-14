@@ -92,22 +92,15 @@
 		"hoverSize": 16,
 		"easeMs": 180,
 		"color": [
-			0.05,
-			0.05,
-			0.06
+			0.9529,
+			0,
+			0.0157
 		],
-		"hoverColorAlt": [
+		"hoverColor": [
 			1,
 			1,
 			1
-		],
-		"edgeWidth": 0.18,
-		"speckSize": 2,
-		"speckSizeVar": 0.6,
-		"trailDensity": 2,
-		"trailTtl": 600,
-		"trailTail": 0.15,
-		"jitter": 6
+		]
 	},
 	"profiles": {
 		"FULL": {

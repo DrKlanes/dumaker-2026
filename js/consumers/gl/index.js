@@ -60,7 +60,7 @@ export async function init({ centerline, loop, cssBridge }) {
 		// Solo desktop con puntero fino; sin await (no retrasa el carrusel) y
 		// se autodesactiva ante cualquier fallo (cursor nativo intacto).
 		if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
-			createCursor({ reduced }).catch(() => {});
+			createCursor().catch(() => {});
 		}
 
 		bridge.env.margin = config.margin;
