@@ -1,0 +1,18 @@
+{
+  "_meta": {
+    "name": "dumaker-efecto-firma",
+    "version": "v1-primera-calibracion",
+    "estado": "provisional — pendiente de validar fresco antes de aprobar como definitivo",
+    "fecha": "2026-06-11",
+    "caracter": "Curva larga casi lineal (vecinos legibles, corrupcion plena mas alla del borde). Temblor fino y nervioso (vibracion electrica, no gelatinosa). Glitch protagonista, grano vivo. La velocidad es el centro del gesto: en reposo respira contenido, al moverse muerde."
+  },
+  "curve": { "start": 0.23, "end": 2.44, "power": 1.05 },
+  "tint": { "color": [ 0.62, 0.04, 0.05 ], "amount": 1.08, "darken": 0.39, "gamma": 1.62, "textCard": 0.45, "srgb": 1 },
+  "grain": { "amount": 0.77, "boost": 0.38, "size": 1, "clockFps": 16 },
+  "glitch": { "amount": 1.27, "bandRate": 3.2, "bandMaxH": 0.04, "bandMaxOff": 0.04, "bandTtl": 0.18, "roll": 1.05, "rollSpeed": 0.55 },
+  "tremor": { "amount": 1.6, "freq": 200, "speed": 23.5 },
+  "velocity": { "gain": 1.72, "cap": 1.2, "tauUp": 0.12, "tauDown": 0.4, "norm": 2200 },
+  "idle": { "sleepVel": 1.5, "sleepAfterMs": 4000 },
+  "profiles": { "FULL": { "dprCap": 2, "scale": 1 }, "LITE": { "dprCap": 1, "scale": 0.75 } },
+  "margin": 10
+}
