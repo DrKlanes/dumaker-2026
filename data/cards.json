@@ -32,7 +32,7 @@
 			"asset": "assets/cards/diorame.webp",
 			"poster": null,
 			"alt": "Formas de color creadas con la app de dibujo Diorame",
-			"href": null,
+			"href": "https://diorame.com",
 			"newTab": true
 		},
 		{
@@ -51,10 +51,10 @@
 			"title": "Velatorio",
 			"template": "poster",
 			"subtitle": "un juego en itch.io",
-			"asset": "assets/cards/ilustracion.webp",
+			"asset": "assets/cards/velatorio.webp",
 			"poster": null,
-			"alt": "Imagen provisional del juego Velatorio",
-			"href": null,
+			"alt": "Imagen del juego Velatorio",
+			"href": "https://perezperez.itch.io/velatorio",
 			"newTab": true
 		},
 		{
