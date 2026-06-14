@@ -43,6 +43,10 @@ export const SCHEMA = [
 	['fisheyeLite.amount', -1, 1, 0.005], ['fisheyeLite.start', 0, 1, 0.01], ['fisheyeLite.squeeze', 0, 1, 0.005],
 	['gradient.angleDeg', 0, 360, 0.5], ['gradient.extent', 0.05, 1, 0.005],
 	['idle.sleepVel', 0.1, 20, 0.1], ['idle.sleepAfterMs', 500, 20000, 100],
+	['cursor.size', 2, 40, 1], ['cursor.hoverSize', 2, 60, 1], ['cursor.easeMs', 40, 600, 10],
+	['cursor.trailTtl', 60, 1500, 10], ['cursor.trailVar', 0, 1, 0.02],
+	['cursor.trailDensity', 0, 2, 0.02], ['cursor.turbulence', 0, 1.5, 0.02],
+	['cursor.color.0', 0, 1, 0.005], ['cursor.color.1', 0, 1, 0.005], ['cursor.color.2', 0, 1, 0.005],
 ];
 
 export function getPath(obj, path) {

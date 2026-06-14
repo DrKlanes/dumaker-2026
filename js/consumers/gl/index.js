@@ -9,6 +9,7 @@ import { createCardsLayer } from './cardsLayer.js';
 import { createLens } from './lens.js';
 import { createTicker } from './ticker.js';
 import { makeNoiseTexture, makeGrainTexture, createVideoFeed, loadLabelFonts } from './textures.js';
+import { createCursor } from './cursor/index.js';
 
 export async function init({ centerline, loop, cssBridge }) {
 	if (matchMedia('(forced-colors: active)').matches) return;
@@ -54,6 +55,14 @@ export async function init({ centerline, loop, cssBridge }) {
 
 	try {
 		await loadPreset();          // única fuente de verdad; si falla → Fase 1 limpia
+
+		// cursor cinético: módulo independiente (canvas/contexto/loop propios).
+		// Solo desktop con puntero fino; sin await (no retrasa el carrusel) y
+		// se autodesactiva ante cualquier fallo (cursor nativo intacto).
+		if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
+			createCursor({ reduced }).catch(() => {});
+		}
+
 		bridge.env.margin = config.margin;
 		applyProfile();
 		if (!bridge.measure()) return teardown();
