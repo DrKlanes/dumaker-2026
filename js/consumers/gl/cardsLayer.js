@@ -1,7 +1,7 @@
 // La capa de cards: quads, uniforms y las bandas de glitch dirigidas
 // desde CPU (deterministas con seed → reproducibles en calibración).
 import { config } from './config.js';
-import { coverMapping, loadMediaTexture, rasterizeLabel } from './textures.js';
+import { coverMapping, loadMediaTexture, rasterizeLabel, makeSolidTexture } from './textures.js';
 
 const GRAD_DEG = 46.5; // gradiente de legibilidad exacto de Figma
 
@@ -69,19 +69,23 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 			const el = bridge.instance(c.index);
 			// LITE: el texto va por DOM (nítido) — no se rasteriza ni sube
 			c.labelTex = env.domText ? null : rasterizeLabel(mgl, el, labelScale);
-			if (c.hasMedia && !c.isClip) {
+			if (c.isText) {
+				// fondo sólido rojo como textura 1×1 → MISMO camino que las
+				// imágenes (sin rama especial uBg). #f30004
+				c.mediaTex = makeSolidTexture(mgl, [243, 0, 4, 255]);
+				c.hasMedia = true;
+				c.cover = { s: [1, 1], o: [0, 0] }; // 1×1 sólido: cualquier UV = rojo
+			} else if (c.hasMedia && !c.isClip) {
 				c.mediaTex = await loadMediaTexture(mgl, el);
 				if (!c.mediaTex) c.hasMedia = false;
-			}
-			if (c.mediaTex) {
-				c.cover = coverMapping(c.mediaTex.w, c.mediaTex.h, env.cardW, env.cardH);
+				if (c.mediaTex) c.cover = coverMapping(c.mediaTex.w, c.mediaTex.h, env.cardW, env.cardH);
 			}
 		}));
 	}
 
 	function refreshCovers() {
 		for (const c of cards) {
-			if (c.mediaTex) c.cover = coverMapping(c.mediaTex.w, c.mediaTex.h, env.cardW, env.cardH);
+			if (c.mediaTex && !c.isText) c.cover = coverMapping(c.mediaTex.w, c.mediaTex.h, env.cardW, env.cardH);
 		}
 	}
 
@@ -235,8 +239,8 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 			prog.u1f('uHide', c.hide ? 1 : 0);
 			prog.u1f('uHasMedia', c.hasMedia ? 1 : 0);
 			prog.u1f('uIsText', c.isText ? 1 : 0);
-			prog.u3f('uBg', 0.9529, 0.0, 0.0157); // #f30004
-			prog.u1f('uGradOn', c.hasMedia ? 1 : 0);
+			prog.u3f('uBg', 0.9529, 0.0, 0.0157); // #f30004 (fallback si falla la media)
+			prog.u1f('uGradOn', c.isText ? 0 : 1); // la card de texto nunca lleva gradiente
 			prog.u2f('uGradOrigin', 0, 1);
 			prog.u3f('uGradDir', gradDir[0], gradDir[1], 1 / L);
 

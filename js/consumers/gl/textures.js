@@ -39,6 +39,14 @@ export async function makeGrainTexture(mgl) {
 	return t;
 }
 
+// textura sólida 1×1 — el fondo de la card de texto (color sólido) pasa
+// por el MISMO camino de media que las imágenes (elimina la rama especial)
+export function makeSolidTexture(mgl, rgba) {
+	const t = mgl.createTexture();
+	mgl.uploadData(t, new Uint8Array(rgba), 1, 1);
+	return t;
+}
+
 // ── media ─────────────────────────────────────────────────────────────
 // Vía new Image(): las <img> del DOM llevan loading="lazy" y las
 // instancias fuera de viewport jamás cargan — su decode() colgaría el
