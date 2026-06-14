@@ -1,7 +1,7 @@
 // Entrada de la capa cinética (Fase 2). Único módulo que main.js importa.
 // Regla heredada: si CUALQUIER paso del boot falla, no se ha ocultado
 // nada del DOM → la Fase 1 queda intacta píxel por píxel.
-import { config } from './config.js';
+import { config, loadPreset } from './config.js';
 import { createGL } from './lib/minigl.js';
 import { VERT, frag } from './shaders.js';
 import { createDomBridge } from './domBridge.js';
@@ -35,7 +35,6 @@ export async function init({ centerline, loop, cssBridge }) {
 			ticker?.renderOnce();
 		},
 	});
-	bridge.env.margin = config.margin;
 
 	function applyProfile() {
 		const p = config.profiles[profileName];
@@ -51,6 +50,8 @@ export async function init({ centerline, loop, cssBridge }) {
 	}
 
 	try {
+		await loadPreset();          // única fuente de verdad; si falla → Fase 1 limpia
+		bridge.env.margin = config.margin;
 		applyProfile();
 		if (!bridge.measure()) return teardown();
 

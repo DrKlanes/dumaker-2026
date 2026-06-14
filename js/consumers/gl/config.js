@@ -1,88 +1,27 @@
 // ═══════════════════════════════════════════════════════════════════
-// CALIBRACIÓN DEL EFECTO-FIRMA — todos los valores son uniforms en vivo
-// (cambiar un número aquí o en el panel ?gl=debug NO recompila shaders).
-// k = smoothstep(curve.start, curve.end, absDist) ^ curve.power
-//   0 = card centrada limpia · 1 = degradación plena hacia el borde
+// ANDAMIAJE DE CALIBRACIÓN del efecto-firma.
+//
+// La ÚNICA fuente de verdad del preset es ./preset.json — la web lo
+// carga al arrancar (loadPreset) y el panel ?gl=debug lo exporta/importa
+// en ese mismo formato. Aquí NO hay valores de preset baked: así no
+// puede quedar una copia obsoleta en silencio. Si preset.json falta o
+// está roto, la GL no arranca y caen las cards limpias de Fase 1.
+//
+// `config` se rellena en runtime (misma referencia que importan los
+// módulos). k = smoothstep(curve.start, curve.end, gradeDist)^curve.power
 // ═══════════════════════════════════════════════════════════════════
 
-export const config = {
-	// curva de degradación por distancia al centro
-	// CALIBRACIÓN MOISÉS (ronda 1): curva larga y casi lineal — los
-	// vecinos se mantienen legibles; la corrupción plena queda lejos
-	curve: {
-		start: 0.23,   // absDist donde empieza a degradarse (la card aguanta limpia cerca del centro)
-		end: 2.44,     // absDist de degradación plena (la vecina está en 1.0)
-		power: 1.05,   // >1 = arranque suave, mordida rápida al final
-		// ANCLAJE AL VIEWPORT: posición de curva en la que cae el borde físico
-		// de la pantalla, sea cual sea el monitor. La graduación usa
-		// (absDist × edgeRef / half-capacity), así el borde se comporta igual
-		// en laptop / Full HD / ultrawide. Default ≈ half-capacity de Full HD
-		// (~1.6): reproduce esas pantallas y alinea ultrawide con ellas.
-		edgeRef: 1.6,
-	},
+// Objeto vivo: lo importan cardsLayer/ticker/index/debug y loadPreset lo
+// puebla in place antes del primer render.
+export const config = {};
 
-	// capa 1 — tinte rojo multiply ("papel que se pudre")
-	tint: {
-		color: [0.62, 0.04, 0.05], // rojo-sangre del viraje (sRGB 0..1; calibrar tono)
-		amount: 1.08,              // intensidad global del viraje
-		darken: 0.39,              // hundimiento de los oscuros a casi negro
-		gamma: 1.62,               // curva de contraste del hundimiento
-		textCard: 0.45,            // factor para la card 00 (ya roja: no sobresaturar)
-		srgb: 1,                   // 1 = multiply en sRGB (como compone Figma) · 0 = linear
-	},
-
-	// capa 2 — grano reactivo (el grano base de Fase 1, agravándose)
-	grain: {
-		amount: 0.77,  // intensidad del speckle base (PNG fase 1) con k
-		boost: 0.38,   // grano procedural fino adicional con k
-		size: 1.0,     // escala del speckle (1 = como fase 1)
-		clockFps: 16,  // latido del grano (reseed/s) — desacoplado del frame rate
-	},
-
-	// capa 3 — glitch analógico de cinta (bandas dirigidas desde CPU)
-	glitch: {
-		amount: 1.27,     // intensidad global de los desplazamientos
-		bandRate: 3.2,    // eventos de banda por segundo a k=1
-		bandMaxH: 0.04,   // alto máximo de banda (fracción de card)
-		bandMaxOff: 0.04, // desplazamiento máximo (fracción de ancho)
-		bandTtl: 0.18,    // vida de una banda (s)
-		roll: 1.05,       // rolling vertical de señal vieja (px de amplitud a k=1)
-		rollSpeed: 0.55,  // velocidad del rolling (Hz)
-	},
-
-	// capa 4 — temblor del borde de la card (vínculo con la línea de Fase 1)
-	// calibrado a vibración fina y rápida (poca amplitud, mucha frecuencia)
-	tremor: {
-		amount: 1.6,   // amplitud máxima en px a k=1 (≤ margin)
-		freq: 200.0,   // frecuencia del ruido a lo largo del borde
-		speed: 23.5,   // ticks de fase por segundo (mismo idioma que el glitch)
-	},
-
-	// modulación por velocidad de scroll (da vida; desactivable con gain 0)
-	// gain alto: el efecto respira FUERTE al moverse, se asienta en reposo
-	velocity: {
-		gain: 1.72,   // cuánto suma la velocidad a k (0 = off)
-		cap: 1.2,     // tope del boost
-		tauUp: 0.12,  // s — respuesta al acelerar
-		tauDown: 0.4, // s — caída al frenar (lenta, se asienta)
-		norm: 2200,   // px/s que equivalen a boost 1.0 antes de gain
-	},
-
-	// reposo y sueño del ticker
-	idle: {
-		sleepVel: 1.5,     // px/s por debajo de los cuales se puede dormir
-		sleepAfterMs: 4000 // grano vivo este tiempo tras asentarse; luego frame congelado
-	},
-
-	// perfiles de rendimiento
-	profiles: {
-		FULL: { dprCap: 2, scale: 1.0 },
-		LITE: { dprCap: 1, scale: 0.75 }, // móvil: solo tinte+grano (shader aparte)
-	},
-
-	// margen del quad alrededor de la card (sitio para el temblor), px CSS
-	margin: 10,
-};
+export async function loadPreset() {
+	const res = await fetch(new URL('./preset.json', import.meta.url), { cache: 'no-cache' });
+	if (!res.ok) throw new Error(`preset.json: HTTP ${res.status}`);
+	const data = await res.json();
+	Object.assign(config, data);
+	return config;
+}
 
 // Esquema del panel de calibración (?gl=debug): ruta, min, max, paso
 export const SCHEMA = [

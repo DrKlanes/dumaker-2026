@@ -108,3 +108,16 @@ Notas:
   `node tools/generate-grain.mjs` (parámetros dentro).
 - El favicon es un placeholder en colores de marca
   (`assets/favicon.svg`) — sustituir por el sello DMK cuando exista.
+
+## Preset del efecto-firma (Fase 2)
+
+**Única fuente de verdad: `js/consumers/gl/preset.json`.** La web lo
+carga al arrancar la capa GL; `config.js` es solo andamiaje (no contiene
+valores de preset, así no hay copia que se quede obsoleta). Si el JSON
+falta o está roto, la GL no arranca y se ven las cards limpias de Fase 1.
+
+Calibrar: abrir la web con `?gl=debug`, mover los sliders (cambian en
+vivo), pulsar **export** (copia el JSON al portapapeles) y pegar ese
+contenido en `preset.json` (conservando el bloque `_meta`). El botón
+**import** aplica un JSON en vivo sin tocar el archivo. `?profile=lite`
+fuerza el perfil móvil en desktop para probarlo.
