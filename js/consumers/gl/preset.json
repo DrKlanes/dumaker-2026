@@ -64,6 +64,11 @@
 		"start": 0.39,
 		"squeeze": 0
 	},
+	"fisheyeLite": {
+		"amount": -0.4,
+		"start": 0.55,
+		"squeeze": 0
+	},
 	"gradient": {
 		"angleDeg": 46.5,
 		"color": [

@@ -280,10 +280,12 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 		// pase de lente global: la escena del FBO → pantalla, + grano
 		// screen-space (tras el warp, sin estiramiento). El fisheye se aplica
 		// en TODOS los perfiles (incl. LITE/móvil): el FBO+pase ya corren, el
-		// warp es coste despreciable. En LITE el texto va por DOM (plano) sobre
-		// la card curvada — divergencia aceptada por diseño (validar en móvil).
+		// warp es coste despreciable. LITE usa su propio bloque fisheyeLite
+		// (curva más suave: el texto va por DOM plano sobre la card curvada).
+		// Fallback a config.fisheye para presets viejos sin el bloque.
 		if (useLens) {
-			lens.draw(target, config.fisheye, splitW, {
+			const fish = env.domText ? (config.fisheyeLite ?? config.fisheye) : config.fisheye;
+			lens.draw(target, fish, splitW, {
 				grainTex,
 				grain: config.grain,
 				curve: config.curve,

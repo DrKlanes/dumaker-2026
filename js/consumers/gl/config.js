@@ -40,6 +40,7 @@ export const SCHEMA = [
 	['velocity.gain', 0, 2, 0.01], ['velocity.cap', 0, 3, 0.05],
 	['velocity.tauUp', 0.01, 0.5, 0.01], ['velocity.tauDown', 0.05, 2, 0.01], ['velocity.norm', 200, 6000, 50],
 	['fisheye.amount', -1, 1, 0.005], ['fisheye.start', 0, 1, 0.01], ['fisheye.squeeze', 0, 1, 0.005],
+	['fisheyeLite.amount', -1, 1, 0.005], ['fisheyeLite.start', 0, 1, 0.01], ['fisheyeLite.squeeze', 0, 1, 0.005],
 	['gradient.angleDeg', 0, 360, 0.5], ['gradient.extent', 0.05, 1, 0.005],
 	['idle.sleepVel', 0.1, 20, 0.1], ['idle.sleepAfterMs', 500, 20000, 100],
 ];
