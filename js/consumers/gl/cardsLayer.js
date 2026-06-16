@@ -242,9 +242,12 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 			prog.u2f('uGradOrigin', 0, 1);
 			prog.u3f('uGradDir', gradDir[0], gradDir[1], 1 / L);
 
-			// media: imagen estática o vídeo de la instancia activa
+			// media: imagen estática o vídeo de la instancia activa.
+			// El vídeo solo se sube a GL en FULL; en LITE (env.domText) va por
+			// DOM plano (sin texImage2D por frame → sin tirones en móvil); el
+			// canvas deja la card clip con uHasMedia 0 y el <video> DOM la cubre.
 			let media = c.mediaTex;
-			if (c.isClip) {
+			if (c.isClip && !env.domText) {
 				const video = sc.el?.querySelector('video');
 				if (video) {
 					media = videoFeed.texFor(c.index, video);
