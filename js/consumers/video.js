@@ -37,9 +37,15 @@ export function createVideoSync(trackEl, geometry, centerline, loop) {
 		for (const v of videos) {
 			const d = distOf(v, s);
 			if (d < LOAD_AT && !v.src) {
+				// preload="auto" + load(): fuerza la descarga/decodificación ya.
+				// Con el preload="none" del template, asignar src NO descarga
+				// hasta play() → el vídeo no estaba listo hasta centrarse.
+				v.preload = 'auto';
 				v.src = v.dataset.src;
+				v.load();
 			} else if (d > UNLOAD_AT && v.src) {
 				v.removeAttribute('src');
+				v.preload = 'none'; // que no vuelva a precargar por su cuenta
 				v.load();
 				continue;
 			}
