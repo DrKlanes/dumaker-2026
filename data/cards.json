@@ -62,22 +62,22 @@
 			"title": "Relatos Aciagos",
 			"template": "poster",
 			"subtitle": "relatos ilustrados",
-			"asset": "assets/cards/diorame.webp",
+			"asset": "assets/cards/relatos-aciagos.webp",
 			"poster": null,
-			"alt": "Imagen provisional de Relatos Aciagos",
-			"href": null,
-			"newTab": false
+			"alt": "Relatos Aciagos — relatos ilustrados",
+			"href": "https://relatos.dumaker.com",
+			"newTab": true
 		},
 		{
 			"id": "horripilantes-rimas",
 			"title": "Horripilantes Rimas",
 			"template": "poster",
 			"subtitle": "rimas ilustradas de terror",
-			"asset": "assets/cards/ilustracion.webp",
+			"asset": "assets/cards/horripilantes-rimas.webp",
 			"poster": null,
-			"alt": "Imagen provisional de Horripilantes Rimas",
-			"href": null,
-			"newTab": false
+			"alt": "Horripilantes Rimas — rimas ilustradas de terror",
+			"href": "https://rimas.dumaker.com",
+			"newTab": true
 		},
 		{
 			"id": "escenas-vr",
