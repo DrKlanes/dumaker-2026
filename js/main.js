@@ -35,7 +35,7 @@ async function boot() {
 		pageEl.classList.add('is-loaded');
 		setTimeout(() => document.querySelector('[data-preloader]')?.remove(), 600);
 	};
-	const revealSafety = setTimeout(reveal, 5000);
+	const revealSafety = setTimeout(reveal, 12000); // tope: la GL puede tardar (onSettled + deadline de assets ~10s)
 
 	const { cards, ahoraTexto, fatal } = await loadData();
 	if (fatal) {
@@ -82,12 +82,13 @@ async function boot() {
 	const cssBridge = createCssBridge(trackEl, geometry, centerline);
 
 	// Fase 2: capa cinética GL — init tras el primer reposo (el módulo ya
-	// está cargado por el import estático); si falla su boot, Fase 1 intacta
-	Promise.race([
+	// está cargado por el import estático); si falla su boot, Fase 1 intacta.
+	// glReady resuelve tras el SWITCH ATÓMICO de la GL (o tras su teardown/
+	// fallo): es la señal real de "todo montado y pintado con el efecto".
+	const glReady = Promise.race([
 		new Promise((r) => centerline.onSettled(r)),
 		new Promise((r) => setTimeout(r, 4000)),
-	]).then(() => initGL({ centerline, loop, cssBridge }))
-		.catch(() => {});
+	]).then(() => initGL({ centerline, loop, cssBridge })).catch(() => {});
 
 	// un gesto táctil nativo recupera el snap CSS inmediatamente
 	trackEl.addEventListener('touchstart', () => {
@@ -156,15 +157,14 @@ async function boot() {
 
 	centerline.wake(); // primer frame: estado activo del menú + CSS vars
 
-	// fundir el preloader: estructura montada + fuentes listas (no se espera al
-	// GL ni a las imágenes lazy; el tope de seguridad cubre cualquier retraso)
-	Promise.race([
-		document.fonts.ready,
-		new Promise((r) => setTimeout(r, 2000)),
-	]).then(() => requestAnimationFrame(() => {
-		clearTimeout(revealSafety);
-		reveal();
-	}));
+	// fundir el preloader cuando la GL ha pintado su primer frame con el efecto
+	// (glReady, tras el switch atómico) Y las fuentes están listas (sin FOUT,
+	// también si la GL no arranca). El tope de seguridad cubre que la GL cuelgue.
+	Promise.all([glReady, document.fonts.ready.catch(() => {})])
+		.then(() => requestAnimationFrame(() => {
+			clearTimeout(revealSafety);
+			reveal();
+		}));
 }
 
 boot();
