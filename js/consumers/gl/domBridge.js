@@ -4,7 +4,6 @@
 // anillo de :focus-visible — regresión WCAG si no).
 
 const STYLE = `
-:root { --clip-lite-scale: 1.08; } /* LITE: cuánto se amplía el vídeo del clip para tapar el reborde curvo del fisheye */
 .strip--cards.gl-on .card__media,
 .strip--cards.gl-on .card__title,
 .strip--cards.gl-on .card__sub { opacity: 0; }
@@ -27,10 +26,12 @@ const STYLE = `
    upload por frame → sin tirones), encima del canvas (z 11 > 10), con su
    object-fit cover y su gradiente de legibilidad. En FULL no aplica (sin
    .gl-lite) → el vídeo sigue oculto y se sube a la GL como hasta ahora. */
+.strip--cards.gl-on.gl-lite .card--clip {
+	background: var(--ink); /* respaldo plano por si el vídeo aún no tiene su 1er frame */
+}
 .strip--cards.gl-on.gl-lite .card--clip .card__media {
 	opacity: 1;
 	z-index: 11;
-	transform: scale(var(--clip-lite-scale, 1.08)); /* rebosa para tapar el reborde curvo del fondo; calíbralo */
 }
 `;
 

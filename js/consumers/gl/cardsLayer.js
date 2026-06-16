@@ -212,6 +212,9 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 			const c = cards[sc.index];
 			if (!c) continue;
 			if (Math.abs(sc.dist) > visLimit) continue;
+			// LITE: el clip va por <video> DOM plano; no se pinta su fondo en el
+			// canvas → no hay forma curvada del fisheye que asome tras el vídeo.
+			if (c.isClip && env.domText) continue;
 			// override del panel = fuerza el input de curva directo (preview
 			// del estado extremo); si no, distancia reanclada al viewport
 			const gradeDist = overrides.absDist ?? (sc.absDist * edgeScale);
