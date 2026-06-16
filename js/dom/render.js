@@ -25,6 +25,7 @@ function fillCard(node, card, i, ahoraTexto) {
 	const li = node.querySelector('li');
 	li.dataset.index = i;
 	li.dataset.id = card.id;
+	if (card.layout === 'prose') li.classList.add('card--prose'); // cuerpo arriba, caja grande
 	node.querySelector('[data-slot="number"]').textContent = num(i);
 	node.querySelector('[data-slot="title"]').textContent = card.title;
 	const sub = node.querySelector('[data-slot="sub"]');

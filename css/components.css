@@ -178,6 +178,25 @@
 	line-height: var(--lh-body);
 }
 
+/* Layout "prose" (card 00 y Sobre mí): el cuerpo de texto sube arriba con
+   una caja grande (texto largo); el número+título quedan abajo como el resto.
+   Lo comparten la card 00 (texto) y Sobre mí (imagen). */
+.card--prose {
+	justify-content: space-between;
+}
+
+.card--prose .card__sub {
+	order: -1;             /* el cuerpo arriba; el título queda al fondo */
+	max-width: none;       /* casi todo el ancho útil (dentro del padding) */
+	white-space: pre-line; /* respeta los saltos de línea del texto editable */
+}
+
+/* legibilidad del texto arriba sobre la imagen: gradiente desde arriba.
+   Solo aplica en Fase 1 sin GL (con GL lo hace el shader, ver cardsLayer). */
+.card--prose .card__media::after {
+	background: linear-gradient(180deg, var(--ink) 0%, rgba(10, 9, 8, 0) 46.6%);
+}
+
 /* ── Claim ──────────────────────────────────────────────────────────── */
 .claim {
 	max-width: 668px;

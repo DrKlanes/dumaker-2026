@@ -51,10 +51,12 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 		while ((el = bridge.instance(i))) {
 			const isText = el.classList.contains('card--texto');
 			const isClip = el.classList.contains('card--clip');
+			const isProse = el.classList.contains('card--prose');
 			cards.push({
 				index: i,
 				isText,
 				isClip,
+				isProse,
 				hasMedia: !isText,
 				mediaTex: null,
 				labelTex: null,
@@ -248,8 +250,15 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 			prog.u1f('uHide', c.hide ? 1 : 0);
 			prog.u1f('uIsText', c.isText ? 1 : 0);
 			prog.u1f('uGradOn', c.isText ? 0 : 1); // la card de texto nunca lleva gradiente
-			prog.u2f('uGradOrigin', 0, 1);
-			prog.u3f('uGradDir', gradDir[0], gradDir[1], 1 / L);
+			if (c.isProse) {
+				// layout prose: el texto va ARRIBA → gradiente de legibilidad
+				// desde arriba (oscurece la franja superior; suave por uGradExtent)
+				prog.u2f('uGradOrigin', 0, 0);
+				prog.u3f('uGradDir', 0, env.cardH, 1 / env.cardH);
+			} else {
+				prog.u2f('uGradOrigin', 0, 1);
+				prog.u3f('uGradDir', gradDir[0], gradDir[1], 1 / L);
+			}
 
 			// media: imagen estática o vídeo de la instancia activa.
 			// El vídeo solo se sube a GL en FULL; en LITE (env.domText) va por

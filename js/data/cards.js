@@ -24,6 +24,7 @@ function sanitizeCard(raw, i, seenIds, warnings) {
 		id: typeof raw.id === 'string' && /^[a-z0-9-]+$/.test(raw.id) ? raw.id : `card-${i}`,
 		title: typeof raw.title === 'string' && raw.title.trim() ? raw.title : `Card ${i}`,
 		template: TEMPLATES.has(raw.template) ? raw.template : 'texto',
+		layout: raw.layout === 'prose' ? 'prose' : null, // cuerpo arriba (card 00 y Sobre mí)
 		subtitle: typeof raw.subtitle === 'string' ? raw.subtitle : null,
 		asset: typeof raw.asset === 'string' ? raw.asset : null,
 		poster: typeof raw.poster === 'string' ? raw.poster : null,

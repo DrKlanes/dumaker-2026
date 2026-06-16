@@ -24,6 +24,10 @@
 						"enum": ["poster", "clip", "texto"],
 						"description": "poster = imagen de fondo · clip = vídeo en loop · texto = fondo rojo tipográfico (card 00)"
 					},
+					"layout": {
+						"enum": ["prose", null],
+						"description": "prose = cuerpo de texto arriba (caja grande), número+título abajo. null = layout estándar."
+					},
 					"subtitle": { "type": ["string", "null"] },
 					"asset": {
 						"type": ["string", "null"],

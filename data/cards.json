@@ -6,6 +6,7 @@
 			"id": "ahora",
 			"title": "Ahora mismo",
 			"template": "texto",
+			"layout": "prose",
 			"subtitle": null,
 			"asset": null,
 			"poster": null,
@@ -105,10 +106,11 @@
 			"id": "sobre-mi",
 			"title": "Sobre mí",
 			"template": "poster",
-			"subtitle": "quién hay detrás",
-			"asset": "assets/cards/diorame.webp",
+			"layout": "prose",
+			"subtitle": "Ilustrador, diseñador y creativo multimedia. Creador indie. Creador liminal. Albacete. Dibujando desde siempre, profesionalmente desde 2008. Mi obra ha aparecido en antologías de Seven Stories Press, Graffito Books, Mad Artist Publishing y Ediciones Babylon, y se ha expuesto en Londres, Bilbao, Toledo y otras ciudades. Formado en Ilustración (Toledo) y Diseño Gráfico (Ciudad Real).",
+			"asset": "assets/cards/about.webp",
 			"poster": null,
-			"alt": "Imagen provisional de la sección Sobre mí",
+			"alt": "Foto de Sobre mí",
 			"href": null,
 			"newTab": false
 		}
