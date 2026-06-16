@@ -5,8 +5,12 @@
 
 const PLAY_AT = 0.6;
 const PAUSE_AT = 0.8;
-const LOAD_AT = 1.5;
-const UNLOAD_AT = 2.5;
+// precarga con margen: el clip carga a 3 slots del centro (≈2.4 slots antes
+// de reproducir) → al llegar ya está decodificado, sin instante de buffering.
+// descarga >4 (histéresis LOAD<UNLOAD). Solo desktop; con 2 clips bien
+// separados, máx 1-2 vídeos cargados a la vez (riesgo bajo).
+const LOAD_AT = 3;
+const UNLOAD_AT = 4;
 
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)');
 
