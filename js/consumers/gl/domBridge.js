@@ -4,6 +4,7 @@
 // anillo de :focus-visible — regresión WCAG si no).
 
 const STYLE = `
+:root { --clip-lite-scale: 1.08; } /* LITE: cuánto se amplía el vídeo del clip para tapar el reborde curvo del fisheye */
 .strip--cards.gl-on .card__media,
 .strip--cards.gl-on .card__title,
 .strip--cards.gl-on .card__sub { opacity: 0; }
@@ -29,6 +30,7 @@ const STYLE = `
 .strip--cards.gl-on.gl-lite .card--clip .card__media {
 	opacity: 1;
 	z-index: 11;
+	transform: scale(var(--clip-lite-scale, 1.08)); /* rebosa para tapar el reborde curvo del fondo; calíbralo */
 }
 `;
 
