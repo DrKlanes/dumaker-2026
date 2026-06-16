@@ -22,17 +22,6 @@ const STYLE = `
 	position: relative;
 	z-index: 11;
 }
-/* LITE: el vídeo del clip se reproduce por DOM plano (fuera de WebGL, sin
-   upload por frame → sin tirones), encima del canvas (z 11 > 10), con su
-   object-fit cover y su gradiente de legibilidad. En FULL no aplica (sin
-   .gl-lite) → el vídeo sigue oculto y se sube a la GL como hasta ahora. */
-.strip--cards.gl-on.gl-lite .card--clip {
-	background: var(--ink); /* respaldo plano por si el vídeo aún no tiene su 1er frame */
-}
-.strip--cards.gl-on.gl-lite .card--clip .card__media {
-	opacity: 1;
-	z-index: 11;
-}
 `;
 
 export function createDomBridge({ onLayout, onFocusReveal }) {

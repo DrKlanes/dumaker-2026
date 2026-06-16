@@ -79,6 +79,40 @@ export async function loadMediaTexture(mgl, instanceEl) {
 	return t;
 }
 
+// LITE: el clip se trata como imagen — su media es el PRIMER frame del vídeo
+// (textura estática, sin reproducción ni upload por frame). Usa el <video>
+// del DOM (en el árbol → decodifica fiable en iOS); loadeddata = frame 0
+// disponible. Tope de 9s: si no llega, devuelve null → fondo de card.
+export async function loadVideoFrameTexture(mgl, instanceEl) {
+	const v = instanceEl.querySelector('video');
+	const src = v?.dataset.src || v?.getAttribute('src');
+	if (!v || !src) return null;
+	if (!v.src) v.src = src;
+	v.muted = true;
+	v.preload = 'auto';
+	try {
+		await new Promise((res, rej) => {
+			if (v.readyState >= 2) return res();
+			const cleanup = () => {
+				clearTimeout(timer);
+				v.removeEventListener('loadeddata', onData);
+				v.removeEventListener('error', onErr);
+			};
+			const onData = () => { cleanup(); res(); };
+			const onErr = () => { cleanup(); rej(new Error('video')); };
+			const timer = setTimeout(() => { cleanup(); v.readyState >= 2 ? res() : rej(new Error('timeout')); }, 9000);
+			v.addEventListener('loadeddata', onData);
+			v.addEventListener('error', onErr);
+			v.load();
+		});
+	} catch {
+		return null;
+	}
+	const t = mgl.createTexture();
+	mgl.upload(t, v); // texImage2D del frame 0, una sola vez (sin play)
+	return t;
+}
+
 export function coverMapping(texW, texH, boxW, boxH) {
 	const texA = texW / texH;
 	const boxA = boxW / boxH;

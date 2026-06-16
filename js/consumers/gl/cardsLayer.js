@@ -1,7 +1,7 @@
 // La capa de cards: quads, uniforms y las bandas de glitch dirigidas
 // desde CPU (deterministas con seed → reproducibles en calibración).
 import { config } from './config.js';
-import { coverMapping, loadMediaTexture, rasterizeLabel, makeSolidTexture } from './textures.js';
+import { coverMapping, loadMediaTexture, loadVideoFrameTexture, rasterizeLabel, makeSolidTexture } from './textures.js';
 
 // helper: color [r,g,b] 0..1 de preset.json → bytes [r,g,b,255] para textura
 const rgb255 = (c) => [Math.round(c[0] * 255), Math.round(c[1] * 255), Math.round(c[2] * 255), 255];
@@ -78,6 +78,12 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 				c.mediaTex = makeSolidTexture(mgl, rgb255(config.bgColor));
 				c.hasMedia = true;
 				c.cover = { s: [1, 1], o: [0, 0] }; // 1×1 sólido: cualquier UV = rojo
+			} else if (c.isClip && env.domText) {
+				// LITE: el clip se trata como imagen — su media es el PRIMER
+				// frame del vídeo (textura estática; sin upload por frame).
+				c.mediaTex = await loadVideoFrameTexture(mgl, el);
+				if (!c.mediaTex) c.hasMedia = false;
+				if (c.mediaTex) c.cover = coverMapping(c.mediaTex.w, c.mediaTex.h, env.cardW, env.cardH);
 			} else if (c.hasMedia && !c.isClip) {
 				c.mediaTex = await loadMediaTexture(mgl, el);
 				if (!c.mediaTex) c.hasMedia = false;
@@ -112,7 +118,10 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 			const c = cards[sc.index];
 			if (!c || sc.absDist > visLimit + 1) return true;
 			const labelOK = env.domText || c.labelTex;
-			return labelOK && (!c.hasMedia || c.isClip || c.mediaTex?.ready);
+			// FULL: el clip llega por videoFeed (no espera mediaTex). LITE: el
+			// clip es imagen (primer frame) → espera mediaTex como las demás.
+			const clipByVideo = c.isClip && !env.domText;
+			return labelOK && (!c.hasMedia || clipByVideo || c.mediaTex?.ready);
 		});
 	}
 
@@ -212,9 +221,6 @@ export function createCardsLayer(mgl, bridge, videoFeed) {
 			const c = cards[sc.index];
 			if (!c) continue;
 			if (Math.abs(sc.dist) > visLimit) continue;
-			// LITE: el clip va por <video> DOM plano; no se pinta su fondo en el
-			// canvas → no hay forma curvada del fisheye que asome tras el vídeo.
-			if (c.isClip && env.domText) continue;
 			// override del panel = fuerza el input de curva directo (preview
 			// del estado extremo); si no, distancia reanclada al viewport
 			const gradeDist = overrides.absDist ?? (sc.absDist * edgeScale);

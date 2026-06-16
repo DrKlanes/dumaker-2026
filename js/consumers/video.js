@@ -14,6 +14,11 @@ export function createVideoSync(trackEl, geometry, centerline, loop) {
 	const videos = [...trackEl.querySelectorAll('video[data-src]')];
 	if (videos.length === 0) return; // sin clips en los datos actuales
 
+	// móvil/tablet (LITE): el clip se muestra como primer frame estático,
+	// gestionado por la capa GL; aquí no reproducimos vídeo (era el origen de
+	// los tirones). En desktop (pointer: fine) sigue todo igual.
+	if (matchMedia('(pointer: coarse)').matches) return;
+
 	function distOf(video, snapshot) {
 		const card = video.closest('.card');
 		const i = Number(card.dataset.index);
