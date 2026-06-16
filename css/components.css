@@ -234,3 +234,43 @@
 	text-transform: uppercase;
 	margin-bottom: var(--space-s);
 }
+
+/* ── Preloader ──────────────────────────────────────────────────────── */
+/* El marco + panel + grano son los del propio .page (no se replican): cero
+   salto al fundir. Durante la carga, los strips están a opacity 0 (el
+   montaje de las cards no se ve) y el logo DMK queda centrado encima.
+   main.js añade .is-loaded → fade-in de los strips + fade-out del logo. */
+.preloader {
+	position: absolute;
+	inset: 0;
+	z-index: 85; /* sobre el contenido y el grano (z80); bajo overlays de error (z100) */
+	display: grid;
+	place-items: center;
+	pointer-events: none;
+	transition: opacity 320ms ease;
+}
+
+.preloader__logo {
+	width: 64px;
+	height: auto;
+	opacity: 0.92;
+}
+
+.page .strip {
+	transition: opacity 300ms ease;
+}
+
+.page:not(.is-loaded) .strip {
+	opacity: 0;
+}
+
+.page.is-loaded .preloader {
+	opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.preloader,
+	.page .strip {
+		transition: none; /* fade instantáneo: sin animación, solo el corte */
+	}
+}

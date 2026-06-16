@@ -24,9 +24,24 @@ const COPIES = 5; // loop infinito: copia central canónica, ±2 periodos de pis
 async function boot() {
 	history.scrollRestoration = 'manual';
 
+	// preloader: marco+panel+grano del propio .page ya visibles; los strips
+	// arrancan a opacity 0 (no se ve el montaje). Se retira al estar listo,
+	// o por un tope de seguridad (nunca dejar un logo eterno).
+	const pageEl = document.querySelector('.page');
+	let revealed = false;
+	const reveal = () => {
+		if (revealed) return;
+		revealed = true;
+		pageEl.classList.add('is-loaded');
+		setTimeout(() => document.querySelector('[data-preloader]')?.remove(), 600);
+	};
+	const revealSafety = setTimeout(reveal, 5000);
+
 	const { cards, ahoraTexto, fatal } = await loadData();
 	if (fatal) {
 		renderDataError(fatal);
+		clearTimeout(revealSafety);
+		reveal(); // mostrar el error, no dejar el preloader encima
 		return;
 	}
 
@@ -140,6 +155,16 @@ async function boot() {
 	});
 
 	centerline.wake(); // primer frame: estado activo del menú + CSS vars
+
+	// fundir el preloader: estructura montada + fuentes listas (no se espera al
+	// GL ni a las imágenes lazy; el tope de seguridad cubre cualquier retraso)
+	Promise.race([
+		document.fonts.ready,
+		new Promise((r) => setTimeout(r, 2000)),
+	]).then(() => requestAnimationFrame(() => {
+		clearTimeout(revealSafety);
+		reveal();
+	}));
 }
 
 boot();

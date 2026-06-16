@@ -40,6 +40,13 @@
 			<a class="footer__link" href="https://ko-fi.com/dumaker" target="_blank" rel="noopener">Ko-fi</a>
 		</footer>
 
+		<!-- Preloader: tapa el montaje de los strips; el marco+panel+grano son
+		     los del propio .page (cero salto al fundir). main.js añade
+		     .is-loaded cuando todo está listo (o un tope de seguridad). -->
+		<div class="preloader" data-preloader aria-hidden="true">
+			<img class="preloader__logo" src="assets/favicon.svg" alt="" width="64" height="51">
+		</div>
+
 	</div>
 
 	<!-- Plantillas de card. El contenido viene de data/cards.json; aquí solo vive el marcado. -->
