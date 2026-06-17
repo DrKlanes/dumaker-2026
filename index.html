@@ -83,10 +83,12 @@
 			     render.js la adopta como copia central y clona las demás para el loop
 			     infinito; reconcilia los textos desde data/cards.json (fuente de verdad). -->
 			<ul class="track" tabindex="0">
+				<!-- Card 00: el cuerpo (efímero, no SEO-crítico) NO se bakea aquí — fuente
+				     única = data/ahora.json. render.js rellena este <p> vacío en runtime;
+				     mantenemos el contenedor para que el conteo de cards cuadre (adopt path). -->
 				<li class="card card--texto card--prose" data-index="0" data-id="ahora" data-copy="2">
 					<h2 class="card__title"><b data-slot="number">00</b><a class="card__link" data-slot="link" draggable="false"><span data-slot="title">Ahora mismo</span></a></h2>
-					<p class="card__sub" data-slot="sub">Junio 2026.
-Trabajando en mi nueva presencia digital. Renovando mi web y las webs de alguno de mis proyectos. Y trabajando en nuestro juego The White Cat's Dark Affair de cara al Guadalindie 2026</p>
+					<p class="card__sub" data-slot="sub"></p>
 				</li>
 				<li class="card card--poster" data-index="1" data-id="ilustracion" data-copy="2">
 					<div class="card__media">
