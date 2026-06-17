@@ -3,8 +3,27 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>dumaker</title>
-	<meta name="description" content="dumaker — dibujo, animación, juegos y universos por conocer.">
+	<title>Dumaker — ilustración, animación, juegos y universos por conocer</title>
+	<meta name="description" content="Dumaker — ilustrador, diseñador y creativo multimedia. Dibujo, animación, videojuegos y universos por conocer. Ilustración, cómic y proyectos indie.">
+	<link rel="canonical" href="https://dumaker.com">
+
+	<!-- Open Graph -->
+	<meta property="og:title" content="Dumaker — ilustración, animación, juegos y universos por conocer">
+	<meta property="og:description" content="Ilustrador, diseñador y creativo multimedia. Dibujo, animación, videojuegos y universos por conocer.">
+	<meta property="og:type" content="website">
+	<meta property="og:url" content="https://dumaker.com">
+	<meta property="og:image" content="https://dumaker.com/assets/dmk_og.jpg">
+	<meta property="og:image:width" content="1200">
+	<meta property="og:image:height" content="630">
+	<meta property="og:locale" content="es_ES">
+	<meta property="og:site_name" content="Dumaker">
+
+	<!-- Twitter Card -->
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:title" content="Dumaker — ilustración, animación, juegos y universos por conocer">
+	<meta name="twitter:description" content="Ilustrador, diseñador y creativo multimedia. Dibujo, animación, videojuegos y universos por conocer.">
+	<meta name="twitter:image" content="https://dumaker.com/assets/dmk_og.jpg">
+
 	<meta name="theme-color" content="#0a0908">
 	<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 	<link rel="preload" href="assets/fonts/chivo-mono-var-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -12,6 +31,27 @@
 	<link rel="stylesheet" href="css/base.css">
 	<link rel="stylesheet" href="css/layout.css">
 	<link rel="stylesheet" href="css/components.css">
+
+	<!-- Sin JS: el preloader nunca añade .is-loaded; revelamos el contenido igual -->
+	<noscript><style>.page:not(.is-loaded) .strip{opacity:1}.preloader{display:none}</style></noscript>
+
+	<script type="application/ld+json">
+	{
+		"@context": "https://schema.org",
+		"@type": "Person",
+		"name": "Dumaker",
+		"url": "https://dumaker.com",
+		"jobTitle": "Ilustrador, diseñador y creativo multimedia",
+		"description": "Ilustrador, diseñador y creativo multimedia. Creador indie y liminal. Dibujo, animación, videojuegos y universos por conocer.",
+		"image": "https://dumaker.com/assets/dmk_og.jpg",
+		"sameAs": [
+			"https://www.instagram.com/dumaker/",
+			"https://www.behance.net/dumaker",
+			"https://ko-fi.com/dumaker",
+			"https://www.deviantart.com/dumaker"
+		]
+	}
+	</script>
 </head>
 <body>
 	<div class="page">
@@ -23,11 +63,88 @@
 		</header>
 
 		<nav class="strip strip--menu" aria-label="Proyectos">
-			<ul class="menu"><!-- renderizado desde data/cards.json --></ul>
+			<!-- Contenido canónico (progressive enhancement): render.js lo adopta y le
+			     añade comportamiento; la fuente de verdad de los textos es data/cards.json. -->
+			<ul class="menu">
+				<li><a class="menu__item" href="#ahora" data-index="0" draggable="false"><b>00</b><span>Ahora mismo</span></a></li>
+				<li><a class="menu__item" href="#ilustracion" data-index="1" draggable="false"><b>01</b><span>Ilustración</span></a></li>
+				<li><a class="menu__item" href="#diorame" data-index="2" draggable="false"><b>02</b><span>Diorame</span></a></li>
+				<li><a class="menu__item" href="#the-white-cat" data-index="3" draggable="false"><b>03</b><span>The White Cat's Dark Affair</span></a></li>
+				<li><a class="menu__item" href="#velatorio" data-index="4" draggable="false"><b>04</b><span>Velatorio</span></a></li>
+				<li><a class="menu__item" href="#relatos-aciagos" data-index="5" draggable="false"><b>05</b><span>Relatos Aciagos</span></a></li>
+				<li><a class="menu__item" href="#horripilantes-rimas" data-index="6" draggable="false"><b>06</b><span>Horripilantes Rimas</span></a></li>
+				<li><a class="menu__item" href="#escenas-vr" data-index="7" draggable="false"><b>07</b><span>Escenas VR</span></a></li>
+				<li><a class="menu__item" href="#sobre-mi" data-index="8" draggable="false"><b>08</b><span>Sobre mí</span></a></li>
+			</ul>
 		</nav>
 
 		<main class="strip strip--cards" aria-roledescription="carrusel" aria-label="Proyectos">
-			<ul class="track" tabindex="0"><!-- renderizado desde data/cards.json --></ul>
+			<!-- Copia canónica de las cards en el HTML estático (indexable sin JS).
+			     render.js la adopta como copia central y clona las demás para el loop
+			     infinito; reconcilia los textos desde data/cards.json (fuente de verdad). -->
+			<ul class="track" tabindex="0">
+				<li class="card card--texto card--prose" data-index="0" data-id="ahora" data-copy="2">
+					<h2 class="card__title"><b data-slot="number">00</b><a class="card__link" data-slot="link" draggable="false"><span data-slot="title">Ahora mismo</span></a></h2>
+					<p class="card__sub" data-slot="sub">Junio 2026.
+Trabajando en mi nueva presencia digital. Renovando mi web y las webs de alguno de mis proyectos. Y trabajando en nuestro juego The White Cat's Dark Affair de cara al Guadalindie 2026</p>
+				</li>
+				<li class="card card--poster" data-index="1" data-id="ilustracion" data-copy="2">
+					<div class="card__media">
+						<img data-slot="img" loading="lazy" decoding="async" alt="Ilustración de una criatura verde emergiendo del agua" src="assets/cards/ilustracion.webp">
+					</div>
+					<h2 class="card__title"><b data-slot="number">01</b><a class="card__link" data-slot="link" draggable="false" href="https://www.deviantart.com/dumaker/gallery" target="_blank" rel="noopener"><span data-slot="title">Ilustración</span></a></h2>
+					<p class="card__sub" data-slot="sub">por encima de todo es lo que soy</p>
+				</li>
+				<li class="card card--poster" data-index="2" data-id="diorame" data-copy="2">
+					<div class="card__media">
+						<img data-slot="img" loading="lazy" decoding="async" alt="Formas de color creadas con la app de dibujo Diorame" src="assets/cards/diorame.webp">
+					</div>
+					<h2 class="card__title"><b data-slot="number">02</b><a class="card__link" data-slot="link" draggable="false" href="https://diorame.com" target="_blank" rel="noopener"><span data-slot="title">Diorame</span></a></h2>
+					<p class="card__sub" data-slot="sub">mi app de dibujo</p>
+				</li>
+				<li class="card card--clip" data-index="3" data-id="the-white-cat" data-copy="2">
+					<div class="card__media">
+						<video data-slot="video" muted playsinline loop preload="none" data-src="assets/cards/the_white_cat.mp4"></video>
+					</div>
+					<h2 class="card__title"><b data-slot="number">03</b><a class="card__link" data-slot="link" draggable="false" href="https://store.steampowered.com/app/3882940/The_White_Cats_Dark_Affair/" target="_blank" rel="noopener"><span data-slot="title">The White Cat's Dark Affair</span></a></h2>
+					<p class="card__sub" data-slot="sub">El juego. Estamos en ello y vamos en serio. En Steam.</p>
+				</li>
+				<li class="card card--poster" data-index="4" data-id="velatorio" data-copy="2">
+					<div class="card__media">
+						<img data-slot="img" loading="lazy" decoding="async" alt="Imagen del juego Velatorio" src="assets/cards/velatorio.webp">
+					</div>
+					<h2 class="card__title"><b data-slot="number">04</b><a class="card__link" data-slot="link" draggable="false" href="https://perezperez.itch.io/velatorio" target="_blank" rel="noopener"><span data-slot="title">Velatorio</span></a></h2>
+					<p class="card__sub" data-slot="sub">El juego. Una aventura sórdida premiada en la ECTOCOMP 2025. En Itch.io.</p>
+				</li>
+				<li class="card card--poster" data-index="5" data-id="relatos-aciagos" data-copy="2">
+					<div class="card__media">
+						<img data-slot="img" loading="lazy" decoding="async" alt="Relatos Aciagos — relatos ilustrados" src="assets/cards/relatos-aciagos.webp">
+					</div>
+					<h2 class="card__title"><b data-slot="number">05</b><a class="card__link" data-slot="link" draggable="false" href="https://relatos.dumaker.com" target="_blank" rel="noopener"><span data-slot="title">Relatos Aciagos</span></a></h2>
+					<p class="card__sub" data-slot="sub">Relatos de terror, locutados e ilustrados.</p>
+				</li>
+				<li class="card card--poster" data-index="6" data-id="horripilantes-rimas" data-copy="2">
+					<div class="card__media">
+						<img data-slot="img" loading="lazy" decoding="async" alt="Horripilantes Rimas — rimas ilustradas de terror" src="assets/cards/horripilantes-rimas.webp">
+					</div>
+					<h2 class="card__title"><b data-slot="number">06</b><a class="card__link" data-slot="link" draggable="false" href="https://rimas.dumaker.com" target="_blank" rel="noopener"><span data-slot="title">Horripilantes Rimas</span></a></h2>
+					<p class="card__sub" data-slot="sub">Pavorosas rimas, locutadas e ilustradas.</p>
+				</li>
+				<li class="card card--clip" data-index="7" data-id="escenas-vr" data-copy="2">
+					<div class="card__media">
+						<video data-slot="video" muted playsinline loop preload="none" data-src="assets/cards/escenas_vr.mp4"></video>
+					</div>
+					<h2 class="card__title"><b data-slot="number">07</b><a class="card__link" data-slot="link" draggable="false" href="https://www.behance.net/gallery/142865257/Escenas-ilustradas-inmersivas-para-realidad-virtual" target="_blank" rel="noopener"><span data-slot="title">Escenas VR</span></a></h2>
+					<p class="card__sub" data-slot="sub">Escenas inmersivas para Realidad Virtual.</p>
+				</li>
+				<li class="card card--poster card--prose" data-index="8" data-id="sobre-mi" data-copy="2">
+					<div class="card__media">
+						<img data-slot="img" loading="lazy" decoding="async" alt="Foto de Sobre mí" src="assets/cards/about.webp">
+					</div>
+					<h2 class="card__title"><b data-slot="number">08</b><a class="card__link" data-slot="link" draggable="false"><span data-slot="title">Sobre mí</span></a></h2>
+					<p class="card__sub" data-slot="sub">Ilustrador, diseñador y creativo multimedia. Creador indie y liminal. Albacete navajero. Dibujando desde siempre, profesionalmente desde 2008. Mi obra ha aparecido en antologías de Seven Stories Press, Graffito Books, Mad Artist Publishing y Ediciones Babylon, y se ha expuesto en Londres, Bilbao, Toledo y otras ciudades. Formado en Ilustración (Toledo) y Diseño Gráfico (Ciudad Real). Stay human 👽</p>
+				</li>
+			</ul>
 		</main>
 
 		<section class="strip strip--claim" aria-label="Claim">
@@ -51,7 +168,9 @@
 
 	</div>
 
-	<!-- Plantillas de card. El contenido viene de data/cards.json; aquí solo vive el marcado. -->
+	<!-- Plantillas de card. Usadas por el render como fallback (regenerar) cuando el
+	     HTML estático está desincronizado con data/cards.json. El contenido vivo de
+	     las cards está arriba en .track; aquí solo vive el marcado vacío. -->
 	<template id="tpl-card-texto">
 		<li class="card card--texto">
 			<h2 class="card__title"><b data-slot="number"></b><a class="card__link" data-slot="link" draggable="false"><span data-slot="title"></span></a></h2>

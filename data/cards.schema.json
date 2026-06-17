@@ -49,6 +49,10 @@
 					"newTab": {
 						"type": "boolean",
 						"description": "true = abre en pestaña nueva (destinos externos)."
+					},
+					"hidden": {
+						"type": "boolean",
+						"description": "true = la card se filtra antes del render (no se escribe ni se numera). Temporal: borrar el flag la reactiva en su sitio."
 					}
 				}
 			}
