@@ -100,7 +100,8 @@
 			"poster": null,
 			"alt": "Imagen provisional del Lab",
 			"href": null,
-			"newTab": false
+			"newTab": false,
+			"hidden": true
 		},
 		{
 			"id": "sobre-mi",

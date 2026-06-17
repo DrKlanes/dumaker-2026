@@ -64,7 +64,7 @@ export async function loadData() {
 		}
 		const seenIds = new Set();
 		cards = rawCards
-			.filter((c) => c && typeof c === 'object')
+			.filter((c) => c && typeof c === 'object' && c.hidden !== true)
 			.map((raw, i) => sanitizeCard(raw, i, seenIds, warnings));
 		if (cards.length === 0) fatal = 'cards.json no contiene ninguna card válida.';
 	} catch (e) {
