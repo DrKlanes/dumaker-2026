@@ -157,6 +157,23 @@
 	margin: -0.4em -0.6em;
 }
 
+/* icono de flecha de enlace: SOLO cards con href real (01-07). Las cards sin
+   enlace (00, 09 y lab) se renderizan como <span class="card__link"> sin
+   [href] → quedan excluidas solas. El mask no lleva fill baked, así que
+   currentColor lo pinta en el color del título de cada card. NO es el
+   stretched que eliminamos: es un ::after nuevo, gateado por [href]. */
+.card__link[href]::after {
+	content: "";
+	display: inline-block;
+	width: 0.7em;
+	height: 0.7em;
+	margin-left: 0.25em;
+	vertical-align: 0.15em;
+	background-color: currentColor;
+	-webkit-mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m2 0v2h4.5l-6.5 6.5 1.5 1.5 6.5-6.5v4.5h2v-8z' transform='translate(3 3)'/%3E%3C/svg%3E") no-repeat center / contain;
+	mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m2 0v2h4.5l-6.5 6.5 1.5 1.5 6.5-6.5v4.5h2v-8z' transform='translate(3 3)'/%3E%3C/svg%3E") no-repeat center / contain;
+}
+
 .card__link:hover span,
 .card__link:focus-visible span {
 	text-decoration: underline;
