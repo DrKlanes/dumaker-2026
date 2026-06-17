@@ -1,7 +1,7 @@
 # dumaker.com
 
 Landing de una sola página: carrusel horizontal infinito de proyectos.
-HTML + CSS + JS vanilla, sin build step. **Fase 1 (esqueleto) completa.**
+HTML + CSS + JS vanilla. En producción en [dumaker.com](https://dumaker.com).
 
 ---
 
@@ -9,7 +9,7 @@ HTML + CSS + JS vanilla, sin build step. **Fase 1 (esqueleto) completa.**
 
 Todo el contenido del carrusel vive en dos archivos JSON:
 
-### `data/cards.json` — las 10 cards
+### `data/cards.json` — las cards
 
 Cada card es un objeto con estos campos:
 
@@ -24,8 +24,9 @@ Cada card es un objeto con estos campos:
 | `alt` | Descripción de la imagen (accesibilidad). |
 | `href` | Destino del clic. `null` = card sin enlace (no rompe nada). |
 | `newTab` | `true` = abre en pestaña nueva (destinos externos). |
+| `hidden` | `true` = excluye la card del carrusel y el menú; la numeración se recalcula densa sin huecos. |
 
-**El número (00–09) NO se escribe**: es el orden del array. Reordenar
+**El número NO se escribe**: es el orden del array (omitiendo las `hidden`). Reordenar
 cards = mover bloques de líneas; la numeración y el menú se actualizan solos.
 
 **Operaciones típicas:**
@@ -41,6 +42,12 @@ Si el archivo queda roto, la web no muere: muestra un aviso con la línea
 exacta del error. En VS Code, el campo `$schema` subraya los errores en
 rojo mientras editas.
 
+**Pipeline de deploy:** `scripts/build-cards.js` regenera la zona de cards en
+`index.html` en cada deploy (la GitHub Action lo corre antes de publicar). La
+zona entre los marcadores `<!-- menu:auto:start/end -->` y
+`<!-- cards:auto:start/end -->` **no se edita a mano** — la genera el script.
+Para añadir, quitar o reordenar cards: editar solo `data/cards.json` y hacer push.
+
 ### `data/ahora.json` — el texto vivo de la card 00
 
 ```json
@@ -49,17 +56,16 @@ rojo mientras editas.
 
 Edita el texto, guarda, push. Eso es todo.
 
-### Footer (Instagram · Ko-fi)
+### Footer (Instagram · Ko-fi · Behance)
 
-Los dos enlaces transversales están en `index.html`, bloque `<footer>`
-(buscar `footer__link`). Pendientes de URL real.
+Los tres enlaces están en `index.html`, bloque `<footer>` (buscar `footer__link`).
 
 ---
 
 ## Desarrollo local
 
-Sin build. Para servir en local (el `fetch` de los JSON necesita un
-servidor, no vale abrir el archivo a pelo):
+Para servir en local (el `fetch` de los JSON necesita un servidor, no vale
+abrir el archivo a pelo):
 
 ```
 npx serve .
@@ -67,24 +73,18 @@ npx serve .
 
 ## Deploy
 
-Push a `main` → GitHub Actions publica en GitHub Pages (~30s).
-Staging: https://drklanes.github.io/dumaker-2026/
+Push a `main` → GitHub Actions publica en GitHub Pages (~30s) en
+[dumaker.com](https://dumaker.com). Previsualización alternativa:
+https://drklanes.github.io/dumaker-2026/
 
-## Dominio dumaker.com (pendiente, decisión consciente)
+## Dominio
 
-dumaker.com aloja hoy la web antigua. Cuando toque sustituirla:
-
-1. En el registrador del dominio, apuntar los registros A del apex a:
-   `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`.
-2. En GitHub → Settings → Pages del repo, poner `dumaker.com` como
-   custom domain y activar *Enforce HTTPS* cuando valide.
-
-El archivo `CNAME` del repo ya está listo (los builds por workflow lo
-ignoran; manda el ajuste de Settings).
+[dumaker.com](https://dumaker.com) en producción, HTTPS activo. cdmon actúa
+solo como registrador (hosting cancelado).
 
 ---
 
-## Arquitectura JS (para la Fase 2)
+## Arquitectura JS
 
 ```
 js/core/       geometry · centerline · animator · snap · settle · loop
@@ -97,8 +97,8 @@ Regla de dependencias: `core` no importa nada externo; `input` usa
 animator+snap; `consumers` solo consumen `centerline`. **El contrato de
 la Fase 2 es el payload de `js/core/centerline.js`** (dist por card con
 vecina = ±1, `phase` circular, `unwrapped` monotónico, `velocity`
-suavizada, `subscribe`/`getSnapshot`/`retain`). La capa WebGL entra como
-`js/consumers/gl/` + un `import()` dinámico en main.js, sin tocar nada
+suavizada, `subscribe`/`getSnapshot`/`retain`). La capa WebGL vive en
+`js/consumers/gl/` y se importa estáticamente en main.js, sin tocar nada
 de lo existente.
 
 Notas:
@@ -106,8 +106,6 @@ Notas:
   invisible en reposo (`js/core/loop.js`).
 - Grano base: PNGs en `assets/textures/`, regenerables con
   `node tools/generate-grain.mjs` (parámetros dentro).
-- El favicon es un placeholder en colores de marca
-  (`assets/favicon.svg`) — sustituir por el sello DMK cuando exista.
 
 ## Preset del efecto-firma (Fase 2)
 
