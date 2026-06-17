@@ -237,6 +237,35 @@ export function rasterizeLabel(mgl, instanceEl, scale) {
 		}
 	}
 
+	// icono de flecha de enlace (equivale a .card__link[href]::after del CSS):
+	// el rasterizado roba texto, no pseudo-elementos, así que lo dibujamos aquí
+	// para que aparezca también en desktop (en LITE/Fase 1 lo pinta el ::after).
+	const link = instanceEl.querySelector('.card__link[href]');
+	const textEl = link && (link.querySelector('[data-slot="title"]') || link);
+	const rects = textEl && textEl.getClientRects();
+	const last = rects && rects[rects.length - 1];
+	if (last) {
+		const s = getComputedStyle(link);
+		const fs = parseFloat(s.fontSize);
+		ctx.font = `${s.fontWeight} ${s.fontSize} "Chivo Mono", monospace`;
+		const m = ctx.measureText('Hg');
+		const ascent = m.fontBoundingBoxAscent ?? fs * 0.8;
+		const descent = m.fontBoundingBoxDescent ?? fs * 0.2;
+		const half = (last.height - (ascent + descent)) / 2;
+		const baseline = (last.top - cardRect.top) + half + ascent;
+		const sz = fs * 0.7;                            // width/height 0.7em
+		const ix = (last.right - cardRect.left) + fs * 0.25; // margin-left 0.25em
+		const iy = baseline - fs * 0.15 - sz;           // vertical-align 0.15em
+		const k = sz / 16;                              // viewBox 16 → sz px (contain)
+		ctx.save();
+		ctx.fillStyle = s.color;                        // = currentColor del título
+		ctx.translate(ix, iy);
+		ctx.scale(k, k);
+		ctx.translate(3, 3);                            // transform="translate(3 3)" del SVG
+		ctx.fill(new Path2D('m2 0v2h4.5l-6.5 6.5 1.5 1.5 6.5-6.5v4.5h2v-8z'));
+		ctx.restore();
+	}
+
 	const t = mgl.createTexture();
 	mgl.upload(t, cnv);
 	return t;
