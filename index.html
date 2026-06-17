@@ -64,8 +64,10 @@
 
 		<nav class="strip strip--menu" aria-label="Proyectos">
 			<!-- Contenido canónico (progressive enhancement): render.js lo adopta y le
-			     añade comportamiento; la fuente de verdad de los textos es data/cards.json. -->
+			     añade comportamiento; la fuente de verdad es data/cards.json. La zona entre
+			     marcadores la genera scripts/build-cards.js en el deploy — NO editar a mano. -->
 			<ul class="menu">
+				<!-- menu:auto:start (generado por scripts/build-cards.js desde data/cards.json — no editar a mano) -->
 				<li><a class="menu__item" href="#ahora" data-index="0" draggable="false"><b>00</b><span>Ahora mismo</span></a></li>
 				<li><a class="menu__item" href="#ilustracion" data-index="1" draggable="false"><b>01</b><span>Ilustración</span></a></li>
 				<li><a class="menu__item" href="#diorame" data-index="2" draggable="false"><b>02</b><span>Diorame</span></a></li>
@@ -75,17 +77,19 @@
 				<li><a class="menu__item" href="#horripilantes-rimas" data-index="6" draggable="false"><b>06</b><span>Horripilantes Rimas</span></a></li>
 				<li><a class="menu__item" href="#escenas-vr" data-index="7" draggable="false"><b>07</b><span>Escenas VR</span></a></li>
 				<li><a class="menu__item" href="#sobre-mi" data-index="8" draggable="false"><b>08</b><span>Sobre mí</span></a></li>
+				<!-- menu:auto:end -->
 			</ul>
 		</nav>
 
 		<main class="strip strip--cards" aria-roledescription="carrusel" aria-label="Proyectos">
 			<!-- Copia canónica de las cards en el HTML estático (indexable sin JS).
-			     render.js la adopta como copia central y clona las demás para el loop
-			     infinito; reconcilia los textos desde data/cards.json (fuente de verdad). -->
+			     render.js la adopta como copia central y clona las demás para el loop;
+			     reconcilia los textos desde data/cards.json (fuente de verdad). La zona
+			     entre marcadores la genera scripts/build-cards.js en el deploy — NO editar
+			     a mano. Card 00: su <p> va vacío a propósito — el cuerpo "Ahora mismo" es
+			     fuente única de data/ahora.json (se rellena en runtime). -->
 			<ul class="track" tabindex="0">
-				<!-- Card 00: el cuerpo (efímero, no SEO-crítico) NO se bakea aquí — fuente
-				     única = data/ahora.json. render.js rellena este <p> vacío en runtime;
-				     mantenemos el contenedor para que el conteo de cards cuadre (adopt path). -->
+				<!-- cards:auto:start (generado por scripts/build-cards.js desde data/cards.json — no editar a mano) -->
 				<li class="card card--texto card--prose" data-index="0" data-id="ahora" data-copy="2">
 					<h2 class="card__title"><b data-slot="number">00</b><a class="card__link" data-slot="link" draggable="false"><span data-slot="title">Ahora mismo</span></a></h2>
 					<p class="card__sub" data-slot="sub"></p>
@@ -146,6 +150,7 @@
 					<h2 class="card__title"><b data-slot="number">08</b><a class="card__link" data-slot="link" draggable="false"><span data-slot="title">Sobre mí</span></a></h2>
 					<p class="card__sub" data-slot="sub">Ilustrador, diseñador y creativo multimedia. Creador indie y liminal. Albacete navajero. Dibujando desde siempre, profesionalmente desde 2008. Mi obra ha aparecido en antologías de Seven Stories Press, Graffito Books, Mad Artist Publishing y Ediciones Babylon, y se ha expuesto en Londres, Bilbao, Toledo y otras ciudades. Formado en Ilustración (Toledo) y Diseño Gráfico (Ciudad Real). Stay human 👽</p>
 				</li>
+				<!-- cards:auto:end -->
 			</ul>
 		</main>
 

@@ -26,6 +26,13 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      # Genera el HTML estático de las cards desde data/cards.json (fuente única)
+      # ANTES de publicar. Si falla, el job queda en rojo y NO se publica nada.
+      - name: Generar cards en index.html
+        run: node scripts/build-cards.js
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
