@@ -149,13 +149,12 @@
 .card__link {
 	color: inherit;
 	text-decoration: none;
-}
-
-/* stretched link: toda la card es clicable */
-.card__link::after {
-	content: "";
-	position: absolute;
-	inset: 0;
+	/* target táctil generoso pero ceñido al texto (NO stretched a toda la
+	   card): el padding agranda el área clicable y el margin negativo lo
+	   compensa para no desplazar el título. El hueco de línea y el resto de
+	   la card quedan libres para arrastrar. */
+	padding: 0.4em 0.6em;
+	margin: -0.4em -0.6em;
 }
 
 .card__link:hover span,

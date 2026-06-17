@@ -9,6 +9,7 @@ export function renderMenu(cards, menuEl) {
 		const li = document.createElement('li');
 		const a = document.createElement('a');
 		a.className = 'menu__item';
+		a.draggable = false; // evita el drag-and-drop nativo del <a> (rompía el arrastre del menú)
 		a.href = `#${card.id}`;
 		a.dataset.index = i;
 		const b = document.createElement('b');

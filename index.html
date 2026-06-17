@@ -54,7 +54,7 @@
 	<!-- Plantillas de card. El contenido viene de data/cards.json; aquí solo vive el marcado. -->
 	<template id="tpl-card-texto">
 		<li class="card card--texto">
-			<h2 class="card__title"><b data-slot="number"></b><a class="card__link" data-slot="link"><span data-slot="title"></span></a></h2>
+			<h2 class="card__title"><b data-slot="number"></b><a class="card__link" data-slot="link" draggable="false"><span data-slot="title"></span></a></h2>
 			<p class="card__sub" data-slot="sub"></p>
 		</li>
 	</template>
@@ -64,7 +64,7 @@
 			<div class="card__media">
 				<img data-slot="img" loading="lazy" decoding="async" alt="">
 			</div>
-			<h2 class="card__title"><b data-slot="number"></b><a class="card__link" data-slot="link"><span data-slot="title"></span></a></h2>
+			<h2 class="card__title"><b data-slot="number"></b><a class="card__link" data-slot="link" draggable="false"><span data-slot="title"></span></a></h2>
 			<p class="card__sub" data-slot="sub"></p>
 		</li>
 	</template>
@@ -74,7 +74,7 @@
 			<div class="card__media">
 				<video data-slot="video" muted playsinline loop preload="none"></video>
 			</div>
-			<h2 class="card__title"><b data-slot="number"></b><a class="card__link" data-slot="link"><span data-slot="title"></span></a></h2>
+			<h2 class="card__title"><b data-slot="number"></b><a class="card__link" data-slot="link" draggable="false"><span data-slot="title"></span></a></h2>
 			<p class="card__sub" data-slot="sub"></p>
 		</li>
 	</template>
