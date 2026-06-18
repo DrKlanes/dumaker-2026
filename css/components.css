@@ -205,6 +205,25 @@
 	order: -1;             /* el cuerpo arriba; el título queda al fondo */
 	max-width: none;       /* casi todo el ancho útil (dentro del padding) */
 	white-space: pre-line; /* respeta los saltos de línea del texto editable */
+	flex: 1 1 auto;        /* ocupa el alto disponible (card − título − gap − padding) */
+	min-height: 0;         /* permite encoger por debajo del contenido (regla flex) */
+	overflow-y: auto;      /* scroll interno SOLO al desbordar; condicional, sin media query */
+	overscroll-behavior: contain; /* el scroll no propaga al carrusel ni al body */
+	touch-action: pan-y;   /* touch: gesto vertical = scroll del texto; horizontal = carrusel */
+	scrollbar-width: thin; /* Firefox */
+	scrollbar-color: rgba(10, 9, 8, 0.35) transparent;
+}
+
+/* barra minimalista (WebKit): fina, sin flechas, thumb tinta translúcida */
+.card--prose .card__sub::-webkit-scrollbar {
+	width: 5px;
+}
+.card--prose .card__sub::-webkit-scrollbar-track {
+	background: transparent;
+}
+.card--prose .card__sub::-webkit-scrollbar-thumb {
+	background: rgba(10, 9, 8, 0.35);
+	border-radius: 3px;
 }
 
 /* legibilidad del texto arriba sobre la imagen: gradiente desde arriba.

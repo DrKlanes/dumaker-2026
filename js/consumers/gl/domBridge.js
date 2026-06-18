@@ -22,6 +22,15 @@ const STYLE = `
 	position: relative;
 	z-index: 11;
 }
+/* Cuerpo prose (card 00 y Sobre mí) en FULL: se mantiene como DOM nítido (no
+   se rasteriza) para permitir scroll interno cuando el texto no cabe en el
+   alto de la card. El título SÍ sigue rasterizado (tiembla con el efecto).
+   En LITE ya lo cubre la regla de arriba. */
+.strip--cards.gl-on .card--prose .card__sub {
+	opacity: 1;
+	position: relative;
+	z-index: 11;
+}
 `;
 
 export function createDomBridge({ onLayout, onFocusReveal }) {

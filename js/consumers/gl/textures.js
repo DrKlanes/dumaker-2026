@@ -208,7 +208,10 @@ export function rasterizeLabel(mgl, instanceEl, scale) {
 	const ctx = cnv.getContext('2d');
 	ctx.scale(scale, scale);
 
-	const blocks = instanceEl.querySelectorAll('.card__title, .card__sub');
+	// prose: el cuerpo (.card__sub) NO se rasteriza — va como DOM nítido con
+	// scroll propio (domBridge lo revela); rasterizar duplicaría el texto.
+	const isProse = instanceEl.classList.contains('card--prose');
+	const blocks = instanceEl.querySelectorAll(isProse ? '.card__title' : '.card__title, .card__sub');
 	for (const block of blocks) {
 		for (const line of extractLines(block)) {
 			const s = line.style;
