@@ -41,16 +41,24 @@ body{background:var(--bg);color:var(--ink);font-family:"Chivo Mono",ui-monospace
 .spacer{flex:1;}
 .field{margin-bottom:9px;}
 .label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em;}
-input[type=text],textarea,select{width:100%;font-family:inherit;font-size:13px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:8px 10px;transition:border-color .12s,box-shadow .12s;}
-input[type=text]:focus,textarea:focus,select:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 2px rgba(243,0,4,0.15);}
+input[type=text],input[type=date],textarea,select{width:100%;font-family:inherit;font-size:13px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:8px 10px;transition:border-color .12s,box-shadow .12s;}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 2px rgba(243,0,4,0.15);}
 textarea{min-height:58px;line-height:1.5;resize:vertical;}
 select{cursor:pointer;height:36px;}
+input[type=date]{cursor:pointer;height:36px;}
 .row2{display:grid;grid-template-columns:1fr 130px;gap:10px;}
 .toggle{display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer;user-select:none;color:var(--muted);}
 .sw{width:34px;height:19px;border-radius:10px;background:var(--line-strong);position:relative;transition:background .15s;flex-shrink:0;}
 .sw.on{background:var(--red);}
 .sw::after{content:"";position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;background:#fff;transition:left .15s;}
 .sw.on::after{left:17px;}
+.dateblk{margin-top:6px;padding:9px 11px;border:1px dashed var(--line-strong);border-radius:var(--radius-sm);background:var(--bg);}
+.dateblk .drow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.dateblk input[type=date]{width:auto;background:var(--surface);}
+.dateblk .calc{font-size:12px;color:var(--ink);font-weight:500;}
+.dateblk .hint{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.5;}
+.dateblk .today{border:1px solid var(--line-strong);background:transparent;border-radius:var(--radius-sm);padding:5px 11px;font-family:inherit;font-size:11px;cursor:pointer;color:var(--ink);}
+.dateblk .today:hover{background:var(--surface);}
 .media{display:flex;gap:12px;align-items:flex-start;margin-top:6px;}
 .thumb{width:64px;height:96px;border-radius:var(--radius-sm);border:1px solid var(--line);background:var(--bg);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;}
 .thumb img,.thumb video{width:100%;height:100%;object-fit:cover;}
@@ -94,7 +102,7 @@ select{cursor:pointer;height:36px;}
     <div class="count" id="count"></div>
   </div>
   <div id="loadbar" class="loadbar">Cargando contenido actual desde el servidor…</div>
-  <div class="sub">Edita, reordena y oculta cards. Arrastra una card para reordenar. La numeración salta las ocultas. "Ahora mismo" (00) se edita en su pestaña dedicada. Los bloques prose avisan si el texto se acerca al límite que en desktop desborda el efecto — avisan, no bloquean. Este editor NO publica: genera el JSON y te prepara las imágenes para que las subas tú.</div>
+  <div class="sub">Edita, reordena y oculta cards. Arrastra una card para reordenar. La numeración salta las ocultas. "Ahora mismo" (00) se edita en su pestaña. Las cards con contador {dias} muestran un campo de fecha. Este editor NO publica: genera el JSON y te prepara las imágenes para que las subas tú.</div>
 
   <div class="seg">
     <button class="on" data-tab="cards">cards</button>
@@ -137,7 +145,7 @@ select{cursor:pointer;height:36px;}
   </div>
 
   <div class="foot">
-    Compositor de dumaker.com · lee el contenido real al cargar, no publica nada. Tras generar: pega <code class="fn">cards.json</code> y <code class="fn">ahora.json</code> en <code class="fn">data/</code> y sube las imágenes (ya renombradas) a <code class="fn">assets/cards/</code>. Push, y el build hace el resto. Límites prose: Sobre mí 380, Ahora mismo 180 — avisan, no bloquean.
+    Compositor de dumaker.com · lee el contenido real al cargar, no publica nada. Tras generar: pega los JSON en <code class="fn">data/</code> y sube las imágenes (ya renombradas) a <code class="fn">assets/cards/</code>. Push, y el build hace el resto. El token <code class="fn">{dias}</code> en un subtítulo cuenta días desde el campo fecha. Límites prose: Sobre mí 380, Ahora mismo 180 — avisan, no bloquean.
   </div>
 </div>
 
@@ -146,21 +154,19 @@ select{cursor:pointer;height:36px;}
   var PROSE_LIMITS = { "sobre-mi": 380, "ahora": 180 };
   var CARDS_URL = "../data/cards.json";
   var AHORA_URL = "../data/ahora.json";
+  var DAYS_TOKEN = "{dias}";
 
   var cards = [];
   var schemaMeta = { "$schema":"./cards.schema.json", version:1 };
   var ahoraTitle = "Ahora mismo";
-  var previews = {}; // id -> {url, type, file, ext}
+  var previews = {};
   var el = function(id){ return document.getElementById(id); };
 
-  // índices "editables" = todas menos la card 00 (id "ahora"), que se gestiona en su tab
   function editableCards(){ return cards.filter(function(c){ return c.id !== "ahora"; }); }
-
   function recount(){
     var vis = cards.filter(function(c){ return c.hidden !== true; }).length;
     el("count").textContent = cards.length + " cards · " + vis + " visibles";
   }
-  // número visible: cuenta sobre el array COMPLETO (incluida la 00), respetando hidden
   function visNumById(id){
     var n=-1;
     for(var i=0;i<cards.length;i++){
@@ -171,10 +177,11 @@ select{cursor:pointer;height:36px;}
   }
   function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
   function escT(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+  function realIndex(id){ for(var i=0;i<cards.length;i++){ if(cards[i].id===id) return i; } return -1; }
+  function extOf(name){ var m=String(name).match(/\.([a-z0-9]+)$/i); return m?m[1].toLowerCase():""; }
+  function baseNoExt(p){ return String(p).replace(/\.[a-z0-9]+$/i, ""); }
 
-  function counterClass(len, limit){
-    var r=len/limit; if(r>1) return "c-red"; if(r>=0.85) return "c-amber"; return "c-green";
-  }
+  function counterClass(len, limit){ var r=len/limit; if(r>1) return "c-red"; if(r>=0.85) return "c-amber"; return "c-green"; }
   function applyCounter(node, len, limit){
     node.classList.remove("c-green","c-amber","c-red");
     node.classList.add(counterClass(len,limit));
@@ -182,15 +189,26 @@ select{cursor:pointer;height:36px;}
     node.querySelector(".ctext").textContent = len + " / " + limit;
   }
 
-  function extOf(name){ var m=String(name).match(/\.([a-z0-9]+)$/i); return m?m[1].toLowerCase():""; }
-  function baseNoExt(p){ return String(p).replace(/\.[a-z0-9]+$/i, ""); }
-
-  function realIndex(id){ for(var i=0;i<cards.length;i++){ if(cards[i].id===id) return i; } return -1; }
+  // ---- contador de días (réplica de la lógica de la web, para previsualizar) ----
+  function daysFrom(iso){
+    if(!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
+    var p=iso.split("-"); var d0=new Date(+p[0], +p[1]-1, +p[2]);
+    var now=new Date(); var d1=new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    var diff=Math.floor((d1-d0)/86400000);
+    return diff<0 ? 0 : diff;
+  }
+  function daysText(iso){
+    var n=daysFrom(iso);
+    if(n===null) return null;
+    return n + (n===1 ? " día" : " días");
+  }
+  function hasToken(c){ return (c.subtitle||"").indexOf(DAYS_TOKEN) !== -1; }
+  function usesDate(c){ return hasToken(c) || (c.desde!==undefined && c.desde!==null && c.desde!==""); }
+  function todayISO(){ var d=new Date(); return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2); }
 
   function render(){
     var wrap = el("cards"); wrap.innerHTML="";
     editableCards().forEach(function(c){
-      var ri = realIndex(c.id);
       var card=document.createElement("div");
       card.className="card"+(c.hidden===true?" hidden-c":"");
       card.setAttribute("draggable","true"); card.dataset.id=c.id;
@@ -211,10 +229,27 @@ select{cursor:pointer;height:36px;}
           +'<div class="counter" data-counter="'+c.id+'" data-limit="'+lim+'"><span class="bar-track"><span class="bar-fill"></span></span><span class="ctext"></span><span class="warn-msg">· en desktop puede cortarse</span></div>'
           +'<div class="prose-note">card prose: texto largo, sin enlace</div></div>';
       } else {
-        fields+='<div class="field"><span class="label">subtítulo</span><input type="text" data-f="subtitle" data-id="'+c.id+'" value="'+esc(c.subtitle||"")+'"></div>';
+        fields+='<div class="field"><span class="label">subtítulo</span><input type="text" data-f="subtitle" data-id="'+c.id+'" value="'+esc(c.subtitle||"")+'" placeholder="usa '+DAYS_TOKEN+' para el contador de días"></div>';
         fields+='<div class="row2">'
           +'<div class="field"><span class="label">enlace (href)</span><input type="text" data-f="href" data-id="'+c.id+'" value="'+esc(c.href||"")+'" placeholder="https://… (vacío = sin enlace)"></div>'
           +'<div class="field"><span class="label">abrir en</span><select data-f="newTab" data-id="'+c.id+'"><option value="true"'+(c.newTab?' selected':'')+'>nueva pestaña</option><option value="false"'+(!c.newTab?' selected':'')+'>misma</option></select></div>'
+          +'</div>';
+      }
+      // bloque de fecha: aparece si la card usa el token {dias} o ya tiene desde
+      if(usesDate(c)){
+        var dt = daysText(c.desde);
+        var preview = "";
+        if(hasToken(c) && dt!==null){
+          preview = (c.subtitle||"").split(DAYS_TOKEN).join(dt);
+        }
+        fields+='<div class="dateblk">'
+          +'<span class="label">fecha del contador (desde)</span>'
+          +'<div class="drow">'
+          +'<input type="date" data-f="desde" data-id="'+c.id+'" value="'+esc(c.desde||"")+'">'
+          +'<button class="today" data-today="'+c.id+'">hoy</button>'
+          +'<span class="calc">'+(dt!==null ? dt+" en portada" : "pon una fecha para el contador")+'</span>'
+          +'</div>'
+          +(preview ? '<div class="hint">vista del subtítulo: '+esc(preview)+'</div>' : '<div class="hint">El token '+DAYS_TOKEN+' del subtítulo se sustituye por los días contados desde esta fecha. Ponla al día que estrenes el proyecto.</div>')
           +'</div>';
       }
       var mediaBlock="";
@@ -234,7 +269,7 @@ select{cursor:pointer;height:36px;}
           var mismatch = (droppedExt !== expectedExt);
           infoExtra = '<div class="up">↑ imagen nueva lista. '
             + '<button class="dlbtn" data-dl="'+c.id+'">descargar como '+finalShort+'</button>'
-            + (mismatch ? '<div class="extwarn">⚠ tu archivo es .'+droppedExt+' pero cards.json espera .'+expectedExt+'. Descarga respeta tu formato (.'+droppedExt+'); si quieres .'+expectedExt+', conviértelo aparte o cambia el asset en el JSON.</div>' : '')
+            + (mismatch ? '<div class="extwarn">⚠ tu archivo es .'+droppedExt+' pero cards.json espera .'+expectedExt+'. La descarga respeta tu formato (.'+droppedExt+'); si quieres .'+expectedExt+', conviértelo aparte o cambia el asset en el JSON.</div>' : '')
             + '<div style="color:var(--muted);margin-top:3px;">Súbela a <code>assets/cards/</code> en tu repo.</div>'
             + '</div>';
         } else {
@@ -264,10 +299,16 @@ select{cursor:pointer;height:36px;}
     var idx=realIndex(id); if(idx<0) return;
     if(f==="newTab"){ cards[idx].newTab=e.target.value==="true"; return; }
     var v=e.target.value;
+    if(f==="desde"){ cards[idx].desde = v.trim()==="" ? null : v; render(); return; }
     cards[idx][f] = (f==="href"&&v.trim()==="") ? null : ((f==="alt"&&v.trim()==="") ? null : v);
-    if(f==="subtitle" && cards[idx].layout==="prose"){
-      var node=el("cards").querySelector('[data-counter="'+id+'"]');
-      if(node) applyCounter(node, v.length, +node.dataset.limit);
+    if(f==="subtitle"){
+      if(cards[idx].layout==="prose"){
+        var node=el("cards").querySelector('[data-counter="'+id+'"]');
+        if(node) applyCounter(node, v.length, +node.dataset.limit);
+      } else {
+        // si el subtítulo gana/pierde el token, re-render para mostrar/ocultar el bloque fecha
+        render();
+      }
     }
   });
   el("cards").addEventListener("click",function(e){
@@ -276,6 +317,8 @@ select{cursor:pointer;height:36px;}
       if(cards[idx].hidden===true) delete cards[idx].hidden; else cards[idx].hidden=true;
       render(); return;
     }
+    var td=e.target.closest('[data-today]');
+    if(td){ var i=realIndex(td.dataset.today); cards[i].desde=todayISO(); render(); return; }
     var dl=e.target.closest('[data-dl]');
     if(dl){ downloadRenamed(dl.dataset.dl); }
   });
@@ -344,6 +387,7 @@ select{cursor:pointer;height:36px;}
       o.asset=c.asset||null; o.poster=c.poster||null;
       o.alt=(c.alt===undefined||c.alt==="")?null:c.alt;
       o.href=c.href||null; o.newTab=!!c.newTab;
+      if(c.desde!==undefined && c.desde!==null && c.desde!=="") o.desde=c.desde;
       if(c.hidden===true) o.hidden=true;
       out.cards.push(o);
     });
@@ -356,6 +400,9 @@ select{cursor:pointer;height:36px;}
       if(ids[c.id]) errs.push("id duplicado: "+c.id);
       ids[c.id]=1;
       if(c.href&&!/^https?:\/\//.test(c.href)) errs.push(c.id+': enlace debe empezar por http:// o https://');
+      // coherencia token/fecha
+      if(hasToken(c) && (!c.desde || !/^\d{4}-\d{2}-\d{2}$/.test(c.desde))) errs.push(c.id+': usa el token '+DAYS_TOKEN+' pero le falta una fecha válida (campo desde)');
+      if(c.desde && !/^\d{4}-\d{2}-\d{2}$/.test(c.desde)) errs.push(c.id+': fecha desde inválida (debe ser AAAA-MM-DD)');
       if(c.layout==="prose" && PROSE_LIMITS[c.id]){
         var len=(c.subtitle||"").length, lim=PROSE_LIMITS[c.id];
         if(len>lim) warns.push(c.id+": "+len+"/"+lim+" — en desktop puede desbordar el efecto");
