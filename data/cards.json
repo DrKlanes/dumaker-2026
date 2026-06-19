@@ -93,16 +93,15 @@
 		},
 		{
 			"id": "lab",
-			"title": "Lab",
+			"title": "#36DaysOfType 2017",
 			"template": "poster",
 			"subtitle": "░▒▓█  OLD BUT OLD  █▓▒░\n[este trabajo lleva {dias} en portada]",
-			"asset": "assets/cards/ilustracion.webp",
+			"asset": "assets/cards/lab.webp",
 			"poster": null,
 			"alt": "Imagen provisional del Lab",
-			"href": null,
+			"href": "https://www.behance.net/gallery/49101507/36DaysOfType-2017",
 			"newTab": false,
-			"desde": "2026-05-10",
-			"hidden": true
+			"desde": "2026-06-20"
 		},
 		{
 			"id": "sobre-mi",
