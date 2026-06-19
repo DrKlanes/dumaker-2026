@@ -58,6 +58,9 @@ select{cursor:pointer;height:36px;}
 .media-info{flex:1;font-size:11px;color:var(--muted);line-height:1.55;}
 .media-info code,code.fn{font-size:11px;background:var(--bg);padding:1px 5px;border-radius:4px;word-break:break-all;color:var(--ink);}
 .up{font-size:11px;color:var(--red);margin-top:5px;}
+.up .dlbtn{display:inline-block;margin-top:4px;border:1px solid var(--red);background:transparent;color:var(--red);border-radius:var(--radius-sm);padding:4px 10px;font-family:inherit;font-size:11px;cursor:pointer;}
+.up .dlbtn:hover{background:var(--red);color:#fff;}
+.up .extwarn{color:var(--amber);}
 .prose-note{font-size:11px;color:var(--faint);margin-top:4px;font-style:italic;}
 .counter{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:11px;}
 .counter .bar-track{flex:1;height:4px;border-radius:2px;background:var(--line);overflow:hidden;}
@@ -91,7 +94,7 @@ select{cursor:pointer;height:36px;}
     <div class="count" id="count"></div>
   </div>
   <div id="loadbar" class="loadbar">Cargando contenido actual desde el servidor…</div>
-  <div class="sub">Edita, reordena y oculta cards. Arrastra una card para reordenar. La numeración salta las ocultas, igual que tu web. Los bloques prose avisan si el texto se acerca al límite que en desktop empieza a desbordar el efecto — avisan, no bloquean. Este editor NO publica: genera el JSON para que lo subas tú.</div>
+  <div class="sub">Edita, reordena y oculta cards. Arrastra una card para reordenar. La numeración salta las ocultas. "Ahora mismo" (00) se edita en su pestaña dedicada. Los bloques prose avisan si el texto se acerca al límite que en desktop desborda el efecto — avisan, no bloquean. Este editor NO publica: genera el JSON y te prepara las imágenes para que las subas tú.</div>
 
   <div class="seg">
     <button class="on" data-tab="cards">cards</button>
@@ -103,6 +106,11 @@ select{cursor:pointer;height:36px;}
   <div id="ahora" style="display:none;">
     <div class="card">
       <div class="crow"><span class="num">00</span><span class="cid">ahora · bloque rojo, fuente única (ahora.json)</span></div>
+      <div class="field">
+        <span class="label">título</span>
+        <input type="text" id="ahora-title" disabled style="opacity:.6;cursor:not-allowed;">
+        <div class="prose-note">El título "Ahora mismo" es fijo (estable, no editable aquí).</div>
+      </div>
       <div class="field">
         <span class="label">texto (usa Intro para saltos de línea)</span>
         <textarea id="ahora-text" style="min-height:130px;"></textarea>
@@ -120,7 +128,7 @@ select{cursor:pointer;height:36px;}
       <button class="btn btn-red" id="gen">generar JSON</button>
       <button class="btn" id="copy">copiar cards.json</button>
       <button class="btn" id="copy-ahora">copiar ahora.json</button>
-      <button class="btn" id="dl">descargar ambos</button>
+      <button class="btn" id="dl">descargar ambos JSON</button>
       <span class="spacer"></span>
       <span class="status" id="status"></span>
     </div>
@@ -129,7 +137,7 @@ select{cursor:pointer;height:36px;}
   </div>
 
   <div class="foot">
-    Compositor de dumaker.com · lee el contenido real al cargar, no publica nada. Tras generar: pega <code class="fn">cards.json</code> y <code class="fn">ahora.json</code> en <code class="fn">data/</code> de tu repo y sube las imágenes nuevas a <code class="fn">assets/cards/</code>. Push, y el build hace el resto. Límites prose: Sobre mí 380, Ahora mismo 180 — avisan, no bloquean.
+    Compositor de dumaker.com · lee el contenido real al cargar, no publica nada. Tras generar: pega <code class="fn">cards.json</code> y <code class="fn">ahora.json</code> en <code class="fn">data/</code> y sube las imágenes (ya renombradas) a <code class="fn">assets/cards/</code>. Push, y el build hace el resto. Límites prose: Sobre mí 380, Ahora mismo 180 — avisan, no bloquean.
   </div>
 </div>
 
@@ -141,60 +149,72 @@ select{cursor:pointer;height:36px;}
 
   var cards = [];
   var schemaMeta = { "$schema":"./cards.schema.json", version:1 };
-  var previews = {};
+  var ahoraTitle = "Ahora mismo";
+  var previews = {}; // id -> {url, type, file, ext}
   var el = function(id){ return document.getElementById(id); };
+
+  // índices "editables" = todas menos la card 00 (id "ahora"), que se gestiona en su tab
+  function editableCards(){ return cards.filter(function(c){ return c.id !== "ahora"; }); }
 
   function recount(){
     var vis = cards.filter(function(c){ return c.hidden !== true; }).length;
     el("count").textContent = cards.length + " cards · " + vis + " visibles";
   }
-  function visNum(idx){
-    var n=-1; for(var i=0;i<=idx;i++){ if(cards[i].hidden!==true) n++; }
-    return cards[idx].hidden===true ? "—" : ("0"+n).slice(-2);
+  // número visible: cuenta sobre el array COMPLETO (incluida la 00), respetando hidden
+  function visNumById(id){
+    var n=-1;
+    for(var i=0;i<cards.length;i++){
+      if(cards[i].hidden!==true) n++;
+      if(cards[i].id===id) return cards[i].hidden===true ? "—" : ("0"+n).slice(-2);
+    }
+    return "··";
   }
   function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
   function escT(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
   function counterClass(len, limit){
-    var r = len / limit;
-    if (r > 1) return "c-red";
-    if (r >= 0.85) return "c-amber";
-    return "c-green";
+    var r=len/limit; if(r>1) return "c-red"; if(r>=0.85) return "c-amber"; return "c-green";
   }
   function applyCounter(node, len, limit){
     node.classList.remove("c-green","c-amber","c-red");
-    node.classList.add(counterClass(len, limit));
+    node.classList.add(counterClass(len,limit));
     node.querySelector(".bar-fill").style.width = Math.min(100, Math.round(len/limit*100)) + "%";
     node.querySelector(".ctext").textContent = len + " / " + limit;
   }
 
+  function extOf(name){ var m=String(name).match(/\.([a-z0-9]+)$/i); return m?m[1].toLowerCase():""; }
+  function baseNoExt(p){ return String(p).replace(/\.[a-z0-9]+$/i, ""); }
+
+  function realIndex(id){ for(var i=0;i<cards.length;i++){ if(cards[i].id===id) return i; } return -1; }
+
   function render(){
     var wrap = el("cards"); wrap.innerHTML="";
-    cards.forEach(function(c,idx){
+    editableCards().forEach(function(c){
+      var ri = realIndex(c.id);
       var card=document.createElement("div");
       card.className="card"+(c.hidden===true?" hidden-c":"");
-      card.setAttribute("draggable","true"); card.dataset.idx=idx;
+      card.setAttribute("draggable","true"); card.dataset.id=c.id;
       var prose=c.layout==="prose";
       var media=c.template==="poster"||c.template==="clip";
       var head='<div class="crow">'
         +'<span class="grip">⠿</span>'
-        +'<span class="num">'+visNum(idx)+'</span>'
+        +'<span class="num">'+visNumById(c.id)+'</span>'
         +'<span class="cid">'+c.id+'</span>'
         +'<span class="tpl">'+c.template+(prose?' · prose':'')+'</span>'
         +'<span class="spacer"></span>'
-        +'<label class="toggle"><span class="sw'+(c.hidden!==true?' on':'')+'" data-act="vis" data-idx="'+idx+'"></span>'+(c.hidden===true?'oculta':'visible')+'</label>'
+        +'<label class="toggle"><span class="sw'+(c.hidden!==true?' on':'')+'" data-act="vis" data-id="'+c.id+'"></span>'+(c.hidden===true?'oculta':'visible')+'</label>'
         +'</div>';
-      var fields='<div class="field"><span class="label">título</span><input type="text" data-f="title" data-idx="'+idx+'" value="'+esc(c.title)+'"></div>';
+      var fields='<div class="field"><span class="label">título</span><input type="text" data-f="title" data-id="'+c.id+'" value="'+esc(c.title)+'"></div>';
       if(prose){
         var lim = PROSE_LIMITS[c.id] || 380;
-        fields+='<div class="field"><span class="label">texto (subtitle)</span><textarea data-f="subtitle" data-idx="'+idx+'" style="min-height:110px;">'+escT(c.subtitle||"")+'</textarea>'
-          +'<div class="counter" data-counter="'+idx+'" data-limit="'+lim+'"><span class="bar-track"><span class="bar-fill"></span></span><span class="ctext"></span><span class="warn-msg">· en desktop puede cortarse</span></div>'
+        fields+='<div class="field"><span class="label">texto (subtitle)</span><textarea data-f="subtitle" data-id="'+c.id+'" style="min-height:110px;">'+escT(c.subtitle||"")+'</textarea>'
+          +'<div class="counter" data-counter="'+c.id+'" data-limit="'+lim+'"><span class="bar-track"><span class="bar-fill"></span></span><span class="ctext"></span><span class="warn-msg">· en desktop puede cortarse</span></div>'
           +'<div class="prose-note">card prose: texto largo, sin enlace</div></div>';
       } else {
-        fields+='<div class="field"><span class="label">subtítulo</span><input type="text" data-f="subtitle" data-idx="'+idx+'" value="'+esc(c.subtitle||"")+'"></div>';
+        fields+='<div class="field"><span class="label">subtítulo</span><input type="text" data-f="subtitle" data-id="'+c.id+'" value="'+esc(c.subtitle||"")+'"></div>';
         fields+='<div class="row2">'
-          +'<div class="field"><span class="label">enlace (href)</span><input type="text" data-f="href" data-idx="'+idx+'" value="'+esc(c.href||"")+'" placeholder="https://… (vacío = sin enlace)"></div>'
-          +'<div class="field"><span class="label">abrir en</span><select data-f="newTab" data-idx="'+idx+'"><option value="true"'+(c.newTab?' selected':'')+'>nueva pestaña</option><option value="false"'+(!c.newTab?' selected':'')+'>misma</option></select></div>'
+          +'<div class="field"><span class="label">enlace (href)</span><input type="text" data-f="href" data-id="'+c.id+'" value="'+esc(c.href||"")+'" placeholder="https://… (vacío = sin enlace)"></div>'
+          +'<div class="field"><span class="label">abrir en</span><select data-f="newTab" data-id="'+c.id+'"><option value="true"'+(c.newTab?' selected':'')+'>nueva pestaña</option><option value="false"'+(!c.newTab?' selected':'')+'>misma</option></select></div>'
           +'</div>';
       }
       var mediaBlock="";
@@ -203,12 +223,28 @@ select{cursor:pointer;height:36px;}
         if(pv){ thumbInner=pv.type==="video"?'<video src="'+pv.url+'" muted></video>':'<img src="'+pv.url+'" alt="">'; }
         else if(c.asset){ thumbInner='<img src="../'+esc(c.asset)+'" alt="" onerror="this.parentNode.innerHTML=\'<span class=ph>sin<br>preview</span>\'">'; }
         else { thumbInner='<span class="ph">arrastra<br>imagen</span>'; }
-        var fname=c.asset?c.asset:"assets/cards/"+c.id+(c.template==="clip"?".mp4":".webp");
+        var expectedExt = c.asset ? extOf(c.asset) : (c.template==="clip"?"mp4":"webp");
+        var expectedName = c.asset ? c.asset : ("assets/cards/"+c.id+"."+expectedExt);
+        var info = 'archivo esperado: <code>'+expectedName+'</code>';
+        var infoExtra = '';
+        if(pv){
+          var droppedExt = pv.ext;
+          var finalName = "assets/cards/" + baseNoExt(c.asset ? c.asset.split("/").pop() : c.id) + "." + droppedExt;
+          var finalShort = finalName.split("/").pop();
+          var mismatch = (droppedExt !== expectedExt);
+          infoExtra = '<div class="up">↑ imagen nueva lista. '
+            + '<button class="dlbtn" data-dl="'+c.id+'">descargar como '+finalShort+'</button>'
+            + (mismatch ? '<div class="extwarn">⚠ tu archivo es .'+droppedExt+' pero cards.json espera .'+expectedExt+'. Descarga respeta tu formato (.'+droppedExt+'); si quieres .'+expectedExt+', conviértelo aparte o cambia el asset en el JSON.</div>' : '')
+            + '<div style="color:var(--muted);margin-top:3px;">Súbela a <code>assets/cards/</code> en tu repo.</div>'
+            + '</div>';
+        } else {
+          infoExtra = '<div style="margin-top:4px;color:var(--faint)">Arrastra una imagen/vídeo para previsualizar el encuadre (2:3) y poder descargarla ya renombrada. No la sube — la subes tú.</div>';
+        }
         mediaBlock='<div class="media">'
-          +'<div class="thumb" data-drop="'+idx+'">'+thumbInner+'</div>'
-          +'<div class="media-info">archivo: <code>'+fname+'</code>'
-          +'<div class="field" style="margin-top:6px;"><span class="label">alt (accesibilidad)</span><input type="text" data-f="alt" data-idx="'+idx+'" value="'+esc(c.alt||"")+'"></div>'
-          +(pv?'<div class="up">↑ nueva imagen lista. Súbela como <code>'+fname+'</code> a tu repo.</div>':'<div style="margin-top:4px;color:var(--faint)">Arrastra una imagen/vídeo para previsualizar el encuadre (2:3). No la sube — solo previsualiza y te dice dónde va.</div>')
+          +'<div class="thumb" data-drop="'+c.id+'">'+thumbInner+'</div>'
+          +'<div class="media-info">'+info
+          +'<div class="field" style="margin-top:6px;"><span class="label">alt (accesibilidad)</span><input type="text" data-f="alt" data-id="'+c.id+'" value="'+esc(c.alt||"")+'"></div>'
+          +infoExtra
           +'</div></div>';
       }
       card.innerHTML=head+fields+mediaBlock;
@@ -216,43 +252,57 @@ select{cursor:pointer;height:36px;}
     });
     bindDrag();
     el("cards").querySelectorAll("[data-counter]").forEach(function(node){
-      var idx=+node.dataset.counter;
-      applyCounter(node, (cards[idx].subtitle||"").length, +node.dataset.limit);
+      var id=node.dataset.counter, c=cards[realIndex(id)];
+      applyCounter(node, (c.subtitle||"").length, +node.dataset.limit);
     });
     recount();
   }
 
   el("cards").addEventListener("input",function(e){
-    var f=e.target.dataset.f, idx=e.target.dataset.idx;
-    if(f===undefined||idx===undefined) return;
-    idx=+idx;
+    var f=e.target.dataset.f, id=e.target.dataset.id;
+    if(f===undefined||id===undefined) return;
+    var idx=realIndex(id); if(idx<0) return;
     if(f==="newTab"){ cards[idx].newTab=e.target.value==="true"; return; }
     var v=e.target.value;
     cards[idx][f] = (f==="href"&&v.trim()==="") ? null : ((f==="alt"&&v.trim()==="") ? null : v);
     if(f==="subtitle" && cards[idx].layout==="prose"){
-      var node=el("cards").querySelector('[data-counter="'+idx+'"]');
+      var node=el("cards").querySelector('[data-counter="'+id+'"]');
       if(node) applyCounter(node, v.length, +node.dataset.limit);
     }
   });
   el("cards").addEventListener("click",function(e){
     var sw=e.target.closest('[data-act="vis"]');
-    if(sw){ var i=+sw.dataset.idx;
-      if(cards[i].hidden===true) delete cards[i].hidden; else cards[i].hidden=true;
-      render();
+    if(sw){ var idx=realIndex(sw.dataset.id);
+      if(cards[idx].hidden===true) delete cards[idx].hidden; else cards[idx].hidden=true;
+      render(); return;
     }
+    var dl=e.target.closest('[data-dl]');
+    if(dl){ downloadRenamed(dl.dataset.dl); }
   });
 
-  var dragIdx=null;
+  function downloadRenamed(id){
+    var pv=previews[id]; if(!pv||!pv.file) return;
+    var c=cards[realIndex(id)];
+    var base = baseNoExt(c.asset ? c.asset.split("/").pop() : id);
+    var finalName = base + "." + pv.ext;
+    var a=document.createElement("a");
+    a.href=URL.createObjectURL(pv.file); a.download=finalName;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    el("status").innerHTML='<span class="ok">✓ '+finalName+' descargada</span>';
+  }
+
+  var dragId=null;
   function bindDrag(){
     el("cards").querySelectorAll(".card").forEach(function(card){
-      card.addEventListener("dragstart",function(e){ dragIdx=+card.dataset.idx; e.dataTransfer.effectAllowed="move"; });
+      card.addEventListener("dragstart",function(e){ dragId=card.dataset.id; e.dataTransfer.effectAllowed="move"; });
       card.addEventListener("dragover",function(e){ e.preventDefault(); card.classList.add("drag-over"); });
       card.addEventListener("dragleave",function(){ card.classList.remove("drag-over"); });
       card.addEventListener("drop",function(e){
         e.preventDefault(); card.classList.remove("drag-over");
-        var to=+card.dataset.idx;
-        if(dragIdx===null||dragIdx===to) return;
-        var m=cards.splice(dragIdx,1)[0]; cards.splice(to,0,m); dragIdx=null; render();
+        var toId=card.dataset.id;
+        if(dragId===null||dragId===toId) return;
+        var from=realIndex(dragId), to=realIndex(toId);
+        var m=cards.splice(from,1)[0]; cards.splice(to,0,m); dragId=null; render();
       });
       var thumb=card.querySelector("[data-drop]");
       if(thumb){
@@ -260,8 +310,8 @@ select{cursor:pointer;height:36px;}
         thumb.addEventListener("drop",function(e){
           e.preventDefault(); e.stopPropagation();
           var file=e.dataTransfer.files&&e.dataTransfer.files[0]; if(!file) return;
-          var i=+thumb.dataset.drop;
-          previews[cards[i].id]={url:URL.createObjectURL(file),type:file.type.indexOf("video")===0?"video":"img"};
+          var id=thumb.dataset.drop;
+          previews[id]={url:URL.createObjectURL(file),type:file.type.indexOf("video")===0?"video":"img",file:file,ext:extOf(file.name)||(file.type.indexOf("video")===0?"mp4":"webp")};
           render();
         });
       }
@@ -332,11 +382,12 @@ select{cursor:pointer;height:36px;}
     st.innerHTML = v.warns.length ? '<span class="amber">✓ generado · '+v.warns.length+' aviso(s)</span>' : '<span class="ok">✓ válido</span>';
     var ups=Object.keys(previews);
     if(ups.length){
-      var html='<div class="up" style="margin-top:10px;">↑ imágenes nuevas para subir a tu repo:</div><ul>';
+      var html='<div class="up" style="margin-top:10px;">↑ imágenes nuevas (descárgalas con su botón en cada card y súbelas a assets/cards/):</div><ul>';
       ups.forEach(function(id){
-        var c=cards.filter(function(x){return x.id===id;})[0];
-        var fn=c&&c.asset?c.asset:"assets/cards/"+id+".webp";
-        html+='<li>'+id+' → guarda como <code>'+fn+'</code></li>';
+        var c=cards[realIndex(id)];
+        var base=baseNoExt(c.asset ? c.asset.split("/").pop() : id);
+        var fn="assets/cards/"+base+"."+previews[id].ext;
+        html+='<li>'+id+' → <code>'+fn+'</code></li>';
       });
       html+='</ul>'; el("uploads").innerHTML=html;
     } else el("uploads").innerHTML="";
@@ -357,28 +408,30 @@ select{cursor:pointer;height:36px;}
       var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=p[0];
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
     });
-    el("status").innerHTML='<span class="ok">✓ descargados</span>';
+    el("status").innerHTML='<span class="ok">✓ JSON descargados</span>';
   });
 
-  // ---- carga inicial: lee el contenido real ----
   function loadData(){
     var lb = el("loadbar");
     Promise.all([
       fetch(CARDS_URL, {cache:"no-store"}).then(function(r){ if(!r.ok) throw new Error("cards.json "+r.status); return r.json(); }),
       fetch(AHORA_URL, {cache:"no-store"}).then(function(r){ if(!r.ok) throw new Error("ahora.json "+r.status); return r.json(); })
     ]).then(function(res){
-      var cj = res[0], aj = res[1];
+      var cj=res[0], aj=res[1];
       if(cj["$schema"]) schemaMeta["$schema"]=cj["$schema"];
       if(cj.version!==undefined) schemaMeta.version=cj.version;
-      cards = (cj.cards||[]).map(function(c){ return Object.assign({}, c); });
+      cards=(cj.cards||[]).map(function(c){ return Object.assign({}, c); });
+      var ahoraCard = cards.filter(function(c){ return c.id==="ahora"; })[0];
+      if(ahoraCard) ahoraTitle = ahoraCard.title || "Ahora mismo";
+      el("ahora-title").value = ahoraTitle;
       el("ahora-text").value = aj.texto || "";
       updateAhoraCounter();
       render();
       lb.className="loadbar ok";
-      lb.textContent="✓ Contenido cargado desde el servidor ("+cards.length+" cards). Editas sobre lo que hay publicado ahora mismo.";
+      lb.textContent="✓ Contenido cargado desde el servidor ("+cards.length+" cards). Editas sobre lo publicado ahora mismo.";
     }).catch(function(err){
       lb.className="loadbar err";
-      lb.textContent="No pude leer los JSON ("+err.message+"). Comprueba que el editor está en una ruta desde la que ../data/cards.json y ../data/ahora.json son accesibles. Sin datos cargados, el editor no puede arrancar.";
+      lb.textContent="No pude leer los JSON ("+err.message+"). Comprueba que el editor está en una ruta desde la que ../data/cards.json y ../data/ahora.json son accesibles.";
     });
   }
   loadData();
