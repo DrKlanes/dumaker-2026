@@ -65,10 +65,10 @@ input[type=date]{cursor:pointer;height:36px;}
 .thumb .ph{font-size:10px;color:var(--faint);text-align:center;padding:4px;line-height:1.3;}
 .media-info{flex:1;font-size:11px;color:var(--muted);line-height:1.55;}
 .media-info code,code.fn{font-size:11px;background:var(--bg);padding:1px 5px;border-radius:4px;word-break:break-all;color:var(--ink);}
-.up{font-size:11px;color:var(--red);margin-top:5px;}
+.up{font-size:11px;color:var(--green);margin-top:5px;}
 .up .dlbtn{display:inline-block;margin-top:4px;border:1px solid var(--red);background:transparent;color:var(--red);border-radius:var(--radius-sm);padding:4px 10px;font-family:inherit;font-size:11px;cursor:pointer;}
 .up .dlbtn:hover{background:var(--red);color:#fff;}
-.up .extwarn{color:var(--amber);}
+.up .tplnote{color:var(--muted);}
 .prose-note{font-size:11px;color:var(--faint);margin-top:4px;font-style:italic;}
 .counter{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:11px;}
 .counter .bar-track{flex:1;height:4px;border-radius:2px;background:var(--line);overflow:hidden;}
@@ -102,7 +102,7 @@ input[type=date]{cursor:pointer;height:36px;}
     <div class="count" id="count"></div>
   </div>
   <div id="loadbar" class="loadbar">Cargando contenido actual desde el servidor…</div>
-  <div class="sub">Edita, reordena y oculta cards. Arrastra una card para reordenar. La numeración salta las ocultas. "Ahora mismo" (00) se edita en su pestaña. Las cards con contador {dias} muestran un campo de fecha. Este editor NO publica: genera el JSON y te prepara las imágenes para que las subas tú.</div>
+  <div class="sub">Edita, reordena y oculta cards. Arrastra una card para reordenar. La numeración salta las ocultas. "Ahora mismo" (00) se edita en su pestaña. Al arrastrar una imagen/vídeo a una card, se actualizan solos su nombre de archivo (asset) y su tipo (poster/clip). Este editor NO publica: genera el JSON y prepara las imágenes para que las subas tú.</div>
 
   <div class="seg">
     <button class="on" data-tab="cards">cards</button>
@@ -156,6 +156,7 @@ input[type=date]{cursor:pointer;height:36px;}
   var AHORA_URL = "../data/ahora.json";
   var DAYS_TOKEN = "{dias}";
   var ASSET_DIR = "assets/cards/";
+  var VIDEO_EXTS = {mp4:1, webm:1, mov:1, m4v:1};
 
   var cards = [];
   var schemaMeta = { "$schema":"./cards.schema.json", version:1 };
@@ -180,14 +181,12 @@ input[type=date]{cursor:pointer;height:36px;}
   function escT(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
   function realIndex(id){ for(var i=0;i<cards.length;i++){ if(cards[i].id===id) return i; } return -1; }
   function extOf(name){ var m=String(name).match(/\.([a-z0-9]+)$/i); return m?m[1].toLowerCase():""; }
-
-  // Nombre de archivo SIEMPRE derivado del id de la card (no del asset heredado).
-  // ext: extensión a usar. Devuelve la ruta completa "assets/cards/<id>.<ext>".
   function assetPathFor(c, ext){ return ASSET_DIR + c.id + "." + ext; }
   function defaultExt(c){
     if(c.asset){ var e=extOf(c.asset); if(e) return e; }
     return c.template==="clip" ? "mp4" : "webp";
   }
+  function templateForExt(ext){ return VIDEO_EXTS[ext] ? "clip" : "poster"; }
 
   function counterClass(len, limit){ var r=len/limit; if(r>1) return "c-red"; if(r>=0.85) return "c-amber"; return "c-green"; }
   function applyCounter(node, len, limit){
@@ -258,23 +257,19 @@ input[type=date]{cursor:pointer;height:36px;}
         if(pv){ thumbInner=pv.type==="video"?'<video src="'+pv.url+'" muted></video>':'<img src="'+pv.url+'" alt="">'; }
         else if(c.asset){ thumbInner='<img src="../'+esc(c.asset)+'" alt="" onerror="this.parentNode.innerHTML=\'<span class=ph>sin<br>preview</span>\'">'; }
         else { thumbInner='<span class="ph">arrastra<br>imagen</span>'; }
-        // nombre esperado: SIEMPRE derivado del id de la card
-        var expectedExt = defaultExt(c);
-        var expectedName = assetPathFor(c, expectedExt);
-        var info = 'archivo esperado: <code>'+expectedName+'</code>';
+        var currentName = c.asset ? c.asset : "(sin asset — arrastra un archivo)";
+        var info = 'asset actual: <code>'+esc(currentName)+'</code> · tipo <code>'+c.template+'</code>';
         var infoExtra = '';
         if(pv){
-          var droppedExt = pv.ext;
-          var finalName = assetPathFor(c, droppedExt);
+          var finalName = c.asset; // ya actualizado en el drop
           var finalShort = finalName.split("/").pop();
-          var mismatch = (droppedExt !== expectedExt);
-          infoExtra = '<div class="up">↑ imagen nueva lista. '
+          infoExtra = '<div class="up">↑ archivo nuevo listo. '
             + '<button class="dlbtn" data-dl="'+c.id+'">descargar como '+finalShort+'</button>'
-            + (mismatch ? '<div class="extwarn">⚠ tu archivo es .'+droppedExt+' pero el asset actual es .'+expectedExt+'. La descarga respeta tu formato (.'+droppedExt+'). Si cambias de formato, recuerda actualizar el campo asset en el JSON (o pregúntame qué formatos soporta tu web).</div>' : '')
-            + '<div style="color:var(--muted);margin-top:3px;">Súbela a <code>'+ASSET_DIR+'</code> en tu repo.</div>'
+            + '<span class="tplnote"> — tipo ajustado a <code>'+c.template+'</code> automáticamente.</span>'
+            + '<div style="color:var(--muted);margin-top:3px;">Súbelo a <code>'+ASSET_DIR+'</code> en tu repo. El asset del JSON ya apunta aquí.</div>'
             + '</div>';
         } else {
-          infoExtra = '<div style="margin-top:4px;color:var(--faint)">Arrastra una imagen/vídeo para previsualizar el encuadre (2:3) y poder descargarla ya renombrada (como '+c.id+'.<ext>). No la sube — la subes tú.</div>';
+          infoExtra = '<div style="margin-top:4px;color:var(--faint)">Arrastra una imagen/vídeo: se previsualiza el encuadre (2:3) y se actualizan solos el asset (a '+c.id+'.&lt;ext&gt;) y el tipo (poster/clip). La descargas renombrada y la subes tú.</div>';
         }
         mediaBlock='<div class="media">'
           +'<div class="thumb" data-drop="'+c.id+'">'+thumbInner+'</div>'
@@ -282,6 +277,10 @@ input[type=date]{cursor:pointer;height:36px;}
           +'<div class="field" style="margin-top:6px;"><span class="label">alt (accesibilidad)</span><input type="text" data-f="alt" data-id="'+c.id+'" value="'+esc(c.alt||"")+'"></div>'
           +infoExtra
           +'</div></div>';
+      } else {
+        // card sin media (texto/prose sin imagen): ofrecer zona de drop por si se quiere convertir a poster/clip
+        mediaBlock='<div class="media"><div class="thumb" data-drop="'+c.id+'"><span class="ph">arrastra<br>imagen</span></div>'
+          +'<div class="media-info" style="color:var(--faint)">Esta card no tiene media. Si arrastras una imagen/vídeo, se le asigna asset y tipo (poster/clip).</div></div>';
       }
       card.innerHTML=head+fields+mediaBlock;
       wrap.appendChild(card);
@@ -324,11 +323,23 @@ input[type=date]{cursor:pointer;height:36px;}
   function downloadRenamed(id){
     var pv=previews[id]; if(!pv||!pv.file) return;
     var c=cards[realIndex(id)];
-    var finalName = c.id + "." + pv.ext;   // SIEMPRE basado en el id
+    var finalName = c.id + "." + pv.ext;
     var a=document.createElement("a");
     a.href=URL.createObjectURL(pv.file); a.download=finalName;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     el("status").innerHTML='<span class="ok">✓ '+finalName+' descargada</span>';
+  }
+
+  function onFileDropped(id, file){
+    var idx=realIndex(id); if(idx<0) return;
+    var ext = extOf(file.name) || (file.type.indexOf("video")===0 ? "mp4" : "webp");
+    var isVideo = file.type.indexOf("video")===0 || !!VIDEO_EXTS[ext];
+    previews[id]={ url:URL.createObjectURL(file), type:isVideo?"video":"img", file:file, ext:ext };
+    // CLAVE: actualizar asset y template de la card automáticamente
+    cards[idx].asset = assetPathFor(cards[idx], ext);
+    cards[idx].template = isVideo ? "clip" : "poster";
+    render();
+    el("status").innerHTML='<span class="ok">✓ '+id+': asset → '+cards[idx].asset+' · tipo → '+cards[idx].template+'</span>';
   }
 
   var dragId=null;
@@ -339,6 +350,7 @@ input[type=date]{cursor:pointer;height:36px;}
       card.addEventListener("dragleave",function(){ card.classList.remove("drag-over"); });
       card.addEventListener("drop",function(e){
         e.preventDefault(); card.classList.remove("drag-over");
+        if(e.dataTransfer.files && e.dataTransfer.files.length) return; // file drop lo maneja el thumb
         var toId=card.dataset.id;
         if(dragId===null||dragId===toId) return;
         var from=realIndex(dragId), to=realIndex(toId);
@@ -350,9 +362,7 @@ input[type=date]{cursor:pointer;height:36px;}
         thumb.addEventListener("drop",function(e){
           e.preventDefault(); e.stopPropagation();
           var file=e.dataTransfer.files&&e.dataTransfer.files[0]; if(!file) return;
-          var id=thumb.dataset.drop;
-          previews[id]={url:URL.createObjectURL(file),type:file.type.indexOf("video")===0?"video":"img",file:file,ext:extOf(file.name)||(file.type.indexOf("video")===0?"mp4":"webp")};
-          render();
+          onFileDropped(thumb.dataset.drop, file);
         });
       }
     });
@@ -394,6 +404,7 @@ input[type=date]{cursor:pointer;height:36px;}
       if(ids[c.id]) errs.push("id duplicado: "+c.id);
       ids[c.id]=1;
       if(c.href&&!/^https?:\/\//.test(c.href)) errs.push(c.id+': enlace debe empezar por http:// o https://');
+      if((c.template==="poster"||c.template==="clip") && !c.asset) warns.push(c.id+": tipo "+c.template+" sin asset (arrastra una imagen/vídeo o pon el asset)");
       if(hasToken(c) && (!c.desde || !/^\d{4}-\d{2}-\d{2}$/.test(c.desde))) errs.push(c.id+': usa el token '+DAYS_TOKEN+' pero le falta una fecha válida (campo desde)');
       if(c.desde && !/^\d{4}-\d{2}-\d{2}$/.test(c.desde)) errs.push(c.id+': fecha desde inválida (debe ser AAAA-MM-DD)');
       if(c.layout==="prose" && PROSE_LIMITS[c.id]){
@@ -422,10 +433,10 @@ input[type=date]{cursor:pointer;height:36px;}
     st.innerHTML = v.warns.length ? '<span class="amber">✓ generado · '+v.warns.length+' aviso(s)</span>' : '<span class="ok">✓ válido</span>';
     var ups=Object.keys(previews);
     if(ups.length){
-      var html='<div class="up" style="margin-top:10px;">↑ imágenes nuevas (descárgalas con su botón en cada card y súbelas a '+ASSET_DIR+'):</div><ul>';
+      var html='<div class="up" style="margin-top:10px;">↑ archivos nuevos (descárgalos con su botón en cada card y súbelos a '+ASSET_DIR+'):</div><ul>';
       ups.forEach(function(id){
         var c=cards[realIndex(id)];
-        html+='<li>'+id+' → <code>'+ASSET_DIR+id+'.'+previews[id].ext+'</code></li>';
+        html+='<li>'+id+' → <code>'+c.asset+'</code></li>';
       });
       html+='</ul>'; el("uploads").innerHTML=html;
     } else el("uploads").innerHTML="";
