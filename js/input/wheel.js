@@ -20,8 +20,10 @@ export function createWheel(zoneEl, trackEl, animator, snap) {
 		if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return; // horizontal nativo
 		// rueda vertical sobre una caja de texto prose con scroll disponible:
 		// que scrollee el texto, no el carrusel (overscroll-behavior:contain
-		// corta el chaining en el borde). Sin esto el listener se la comería:
-		// preventDefault + scroll horizontal aunque haya overflow vertical.
+		// corta el chaining en el borde). Solo se cumple en LITE: ahí el cuerpo
+		// prose es DOM con overflow-y:auto. En FULL el cuerpo se rasteriza al
+		// efecto (min-height:auto → no encoge → scrollHeight==clientHeight), así
+		// que esta condición es falsa y la rueda navega el carrusel como siempre.
 		const sub = e.target.closest?.('.card--prose .card__sub');
 		if (sub && sub.scrollHeight > sub.clientHeight + 1) return;
 		e.preventDefault();

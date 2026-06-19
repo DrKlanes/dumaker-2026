@@ -205,6 +205,13 @@
 	order: -1;             /* el cuerpo arriba; el título queda al fondo */
 	max-width: none;       /* casi todo el ancho útil (dentro del padding) */
 	white-space: pre-line; /* respeta los saltos de línea del texto editable */
+}
+
+/* LITE (móvil/tablet): el cuerpo prose va por DOM nítido (no se rasteriza al
+   efecto) → scroll interno cuando el texto no cabe en el alto de la card.
+   En FULL el cuerpo se rasteriza y recibe el efecto-firma: NO hay DOM
+   scrollable, el sub recupera min-height:auto y no encoge. */
+.strip--cards.gl-lite .card--prose .card__sub {
 	flex: 1 1 auto;        /* ocupa el alto disponible (card − título − gap − padding) */
 	min-height: 0;         /* permite encoger por debajo del contenido (regla flex) */
 	overflow-y: auto;      /* scroll interno SOLO al desbordar; condicional, sin media query */
@@ -215,13 +222,13 @@
 }
 
 /* barra minimalista (WebKit): fina, sin flechas, thumb tinta translúcida */
-.card--prose .card__sub::-webkit-scrollbar {
+.strip--cards.gl-lite .card--prose .card__sub::-webkit-scrollbar {
 	width: 5px;
 }
-.card--prose .card__sub::-webkit-scrollbar-track {
+.strip--cards.gl-lite .card--prose .card__sub::-webkit-scrollbar-track {
 	background: transparent;
 }
-.card--prose .card__sub::-webkit-scrollbar-thumb {
+.strip--cards.gl-lite .card--prose .card__sub::-webkit-scrollbar-thumb {
 	background: rgba(10, 9, 8, 0.35);
 	border-radius: 3px;
 }
