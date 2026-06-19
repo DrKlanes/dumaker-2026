@@ -53,6 +53,11 @@
 					"hidden": {
 						"type": "boolean",
 						"description": "true = la card se filtra antes del render (no se escribe ni se numera). Temporal: borrar el flag la reactiva en su sitio."
+					},
+					"desde": {
+						"type": "string",
+						"format": "date",
+						"description": "Fecha ISO (YYYY-MM-DD) desde la que cuenta el token {dias} del subtítulo. Opcional; solo la usan cards con contador de días en portada (p. ej. lab). El token {dias} ya incluye la unidad con plural: escribir '…lleva {dias} en portada'."
 					}
 				}
 			}

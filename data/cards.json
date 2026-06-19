@@ -95,12 +95,13 @@
 			"id": "lab",
 			"title": "Lab",
 			"template": "poster",
-			"subtitle": "experimentos y prototipos",
+			"subtitle": "░▒▓█  OLD BUT OLD  █▓▒░\n[este trabajo lleva {dias} en portada]",
 			"asset": "assets/cards/ilustracion.webp",
 			"poster": null,
 			"alt": "Imagen provisional del Lab",
 			"href": null,
 			"newTab": false,
+			"desde": "2026-05-10",
 			"hidden": true
 		},
 		{

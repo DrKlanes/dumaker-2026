@@ -32,6 +32,12 @@ function sanitizeCard(raw, i, seenIds, warnings) {
 		href: typeof raw.href === 'string' && HREF_OK.test(raw.href) ? raw.href : null,
 		newTab: raw.newTab === true,
 	};
+	// `desde`: fecha ISO (YYYY-MM-DD) opcional para el contador {dias} del
+	// subtítulo (lo resuelve resolveDaysToken en dom/render.js). Solo se conserva
+	// si tiene formato válido; si no, se omite y el token quedaría sin resolver.
+	if (typeof raw.desde === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(raw.desde)) {
+		card.desde = raw.desde;
+	}
 	if (!TEMPLATES.has(raw.template)) {
 		warnings.push(`cards.json: la card ${i} tiene template "${raw.template}", debe ser poster|clip|texto. Usando "texto".`);
 	}

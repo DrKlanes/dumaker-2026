@@ -12,6 +12,28 @@
 
 const num = (i) => String(i).padStart(2, '0');
 
+// Sustituye el token {dias} del subtítulo por el contador real de días desde
+// `card.desde` (fecha ISO "YYYY-MM-DD"): días transcurridos calculados en el
+// navegador al render (cambia una vez al día; no hace falta refrescarlo en vivo).
+// El token YA incluye la unidad con plural correcto — "0 días" / "1 día" /
+// "40 días" — así que el subtítulo se escribe "…lleva {dias} en portada" (la
+// palabra "días" la pone el token). Solo actúa si la card trae `desde` válido y
+// el token aparece: no toca el resto de cards. Se resuelve AQUÍ, en el DOM,
+// ANTES de que la capa GL rasterice el label en FULL (render corre en boot; la
+// GL arranca tras el settled y lee el textContent ya resuelto) → el número llega
+// igual a la textura (FULL) y al DOM (LITE/Fase 1).
+function resolveDaysToken(text, card) {
+	if (!text || !card.desde || text.indexOf('{dias}') === -1) return text;
+	const p = String(card.desde).split('-');
+	const desde = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+	if (isNaN(desde.getTime())) return text; // fecha inválida: texto sin tocar
+	const now = new Date();
+	const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+	let dias = Math.round((today - desde) / 86400000); // round: inmune a saltos DST
+	if (dias < 0) dias = 0;
+	return text.replace(/\{dias\}/g, dias + (dias === 1 ? ' día' : ' días'));
+}
+
 // Rellena un <li> de card (existente o recién clonado de template) con los
 // datos de la card. Idéntico resultado en ambos caminos (adoptar / regenerar).
 function fillCard(li, card, i, ahoraTexto) {
@@ -21,7 +43,8 @@ function fillCard(li, card, i, ahoraTexto) {
 	li.querySelector('[data-slot="number"]').textContent = num(i);
 	li.querySelector('[data-slot="title"]').textContent = card.title;
 	const sub = li.querySelector('[data-slot="sub"]');
-	const subText = card.template === 'texto' && i === 0 ? ahoraTexto : card.subtitle;
+	const rawSub = card.template === 'texto' && i === 0 ? ahoraTexto : card.subtitle;
+	const subText = resolveDaysToken(rawSub, card);
 	if (sub) {
 		if (subText) sub.textContent = subText;
 		else sub.remove();
