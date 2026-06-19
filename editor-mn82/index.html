@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>compositor de cards · dumaker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chivo+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ebebeb;--ink:#0a0908;--red:#f30004;--red-dark:#c80003;--surface:#ffffff;
+  --line:rgba(10,9,8,0.14);--line-strong:rgba(10,9,8,0.28);--muted:rgba(10,9,8,0.55);
+  --faint:rgba(10,9,8,0.38);--amber:#b8730a;--green:#0a7a3c;--radius:10px;--radius-sm:7px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{background:var(--bg);color:var(--ink);font-family:"Chivo Mono",ui-monospace,monospace;font-weight:400;line-height:1.5;padding:40px 0 80px;}
+.wrap{max-width:760px;margin:0 auto;padding:0 24px;}
+.h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:4px;}
+.title{font-size:24px;font-weight:700;letter-spacing:-0.02em;}
+.title .red{color:var(--red);}
+.count{font-size:13px;color:var(--muted);}
+.sub{font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.6;}
+.loadbar{font-size:12px;color:var(--muted);margin-bottom:18px;padding:8px 12px;border-radius:var(--radius-sm);background:var(--surface);border:1px solid var(--line);}
+.loadbar.err{color:var(--red);border-color:var(--red);}
+.loadbar.ok{color:var(--green);}
+.seg{display:inline-flex;border:1px solid var(--line-strong);border-radius:var(--radius-sm);overflow:hidden;margin-bottom:22px;}
+.seg button{border:none;border-radius:0;background:transparent;padding:8px 18px;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;color:var(--muted);transition:background .12s,color .12s;}
+.seg button.on{background:var(--red);color:#fff;}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;transition:border-color .12s;}
+.card.hidden-c{opacity:0.6;border-style:dashed;}
+.card.drag-over{border-color:var(--red);border-style:solid;}
+.crow{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.grip{cursor:grab;color:var(--faint);font-size:16px;line-height:1;user-select:none;}
+.grip:active{cursor:grabbing;}
+.num{font-weight:700;font-size:13px;min-width:24px;color:var(--red);}
+.cid{font-size:12px;color:var(--faint);}
+.tpl{font-size:11px;padding:2px 9px;border-radius:var(--radius-sm);background:var(--bg);color:var(--muted);}
+.spacer{flex:1;}
+.field{margin-bottom:9px;}
+.label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em;}
+input[type=text],textarea,select{width:100%;font-family:inherit;font-size:13px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:8px 10px;transition:border-color .12s,box-shadow .12s;}
+input[type=text]:focus,textarea:focus,select:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 2px rgba(243,0,4,0.15);}
+textarea{min-height:58px;line-height:1.5;resize:vertical;}
+select{cursor:pointer;height:36px;}
+.row2{display:grid;grid-template-columns:1fr 130px;gap:10px;}
+.toggle{display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer;user-select:none;color:var(--muted);}
+.sw{width:34px;height:19px;border-radius:10px;background:var(--line-strong);position:relative;transition:background .15s;flex-shrink:0;}
+.sw.on{background:var(--red);}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;background:#fff;transition:left .15s;}
+.sw.on::after{left:17px;}
+.media{display:flex;gap:12px;align-items:flex-start;margin-top:6px;}
+.thumb{width:64px;height:96px;border-radius:var(--radius-sm);border:1px solid var(--line);background:var(--bg);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.thumb img,.thumb video{width:100%;height:100%;object-fit:cover;}
+.thumb .ph{font-size:10px;color:var(--faint);text-align:center;padding:4px;line-height:1.3;}
+.media-info{flex:1;font-size:11px;color:var(--muted);line-height:1.55;}
+.media-info code,code.fn{font-size:11px;background:var(--bg);padding:1px 5px;border-radius:4px;word-break:break-all;color:var(--ink);}
+.up{font-size:11px;color:var(--red);margin-top:5px;}
+.prose-note{font-size:11px;color:var(--faint);margin-top:4px;font-style:italic;}
+.counter{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:11px;}
+.counter .bar-track{flex:1;height:4px;border-radius:2px;background:var(--line);overflow:hidden;}
+.counter .bar-fill{height:100%;width:0;transition:width .12s,background .12s;border-radius:2px;}
+.counter .ctext{white-space:nowrap;font-variant-numeric:tabular-nums;}
+.c-green .bar-fill{background:var(--green);} .c-green .ctext{color:var(--green);}
+.c-amber .bar-fill{background:var(--amber);} .c-amber .ctext{color:var(--amber);}
+.c-red .bar-fill{background:var(--red);} .c-red .ctext{color:var(--red);font-weight:500;}
+.counter .warn-msg{display:none;}
+.c-red .warn-msg{display:inline;color:var(--red);}
+.export{margin-top:24px;}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px;}
+.btn{border:1px solid var(--line-strong);background:transparent;border-radius:var(--radius-sm);padding:8px 15px;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;color:var(--ink);transition:background .12s,transform .05s;}
+.btn:hover{background:rgba(10,9,8,0.05);}
+.btn:active{transform:scale(0.98);}
+.btn-red{background:var(--red);color:#fff;border-color:var(--red);}
+.btn-red:hover{background:var(--red-dark);}
+.out{width:100%;min-height:170px;max-height:340px;font-family:inherit;font-size:11px;line-height:1.55;padding:12px;border-radius:var(--radius-sm);border:1px solid var(--line);background:var(--surface);color:var(--ink);white-space:pre;overflow:auto;}
+.status .warn{font-size:12px;color:var(--red);}
+.status .ok{font-size:12px;color:var(--green);}
+.status .amber{font-size:12px;color:var(--amber);}
+.uploads ul{margin:4px 0 0;padding-left:20px;font-size:11px;color:var(--muted);}
+.uploads li{margin-bottom:2px;}
+.foot{margin-top:30px;font-size:11px;color:var(--faint);line-height:1.6;border-top:1px solid var(--line);padding-top:16px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="h">
+    <div class="title">compositor de <span class="red">cards</span></div>
+    <div class="count" id="count"></div>
+  </div>
+  <div id="loadbar" class="loadbar">Cargando contenido actual desde el servidor…</div>
+  <div class="sub">Edita, reordena y oculta cards. Arrastra una card para reordenar. La numeración salta las ocultas, igual que tu web. Los bloques prose avisan si el texto se acerca al límite que en desktop empieza a desbordar el efecto — avisan, no bloquean. Este editor NO publica: genera el JSON para que lo subas tú.</div>
+
+  <div class="seg">
+    <button class="on" data-tab="cards">cards</button>
+    <button data-tab="ahora">ahora mismo</button>
+  </div>
+
+  <div id="cards"></div>
+
+  <div id="ahora" style="display:none;">
+    <div class="card">
+      <div class="crow"><span class="num">00</span><span class="cid">ahora · bloque rojo, fuente única (ahora.json)</span></div>
+      <div class="field">
+        <span class="label">texto (usa Intro para saltos de línea)</span>
+        <textarea id="ahora-text" style="min-height:130px;"></textarea>
+        <div class="counter" id="ahora-counter" data-limit="180">
+          <span class="bar-track"><span class="bar-fill"></span></span>
+          <span class="ctext"></span>
+          <span class="warn-msg">· en desktop puede cortarse</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="export">
+    <div class="bar">
+      <button class="btn btn-red" id="gen">generar JSON</button>
+      <button class="btn" id="copy">copiar cards.json</button>
+      <button class="btn" id="copy-ahora">copiar ahora.json</button>
+      <button class="btn" id="dl">descargar ambos</button>
+      <span class="spacer"></span>
+      <span class="status" id="status"></span>
+    </div>
+    <pre class="out" id="out">Pulsa "generar JSON" para validar y ver el resultado.</pre>
+    <div class="uploads" id="uploads"></div>
+  </div>
+
+  <div class="foot">
+    Compositor de dumaker.com · lee el contenido real al cargar, no publica nada. Tras generar: pega <code class="fn">cards.json</code> y <code class="fn">ahora.json</code> en <code class="fn">data/</code> de tu repo y sube las imágenes nuevas a <code class="fn">assets/cards/</code>. Push, y el build hace el resto. Límites prose: Sobre mí 380, Ahora mismo 180 — avisan, no bloquean.
+  </div>
+</div>
+
+<script>
+(function(){
+  var PROSE_LIMITS = { "sobre-mi": 380, "ahora": 180 };
+  var CARDS_URL = "../data/cards.json";
+  var AHORA_URL = "../data/ahora.json";
+
+  var cards = [];
+  var schemaMeta = { "$schema":"./cards.schema.json", version:1 };
+  var previews = {};
+  var el = function(id){ return document.getElementById(id); };
+
+  function recount(){
+    var vis = cards.filter(function(c){ return c.hidden !== true; }).length;
+    el("count").textContent = cards.length + " cards · " + vis + " visibles";
+  }
+  function visNum(idx){
+    var n=-1; for(var i=0;i<=idx;i++){ if(cards[i].hidden!==true) n++; }
+    return cards[idx].hidden===true ? "—" : ("0"+n).slice(-2);
+  }
+  function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+  function escT(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+  function counterClass(len, limit){
+    var r = len / limit;
+    if (r > 1) return "c-red";
+    if (r >= 0.85) return "c-amber";
+    return "c-green";
+  }
+  function applyCounter(node, len, limit){
+    node.classList.remove("c-green","c-amber","c-red");
+    node.classList.add(counterClass(len, limit));
+    node.querySelector(".bar-fill").style.width = Math.min(100, Math.round(len/limit*100)) + "%";
+    node.querySelector(".ctext").textContent = len + " / " + limit;
+  }
+
+  function render(){
+    var wrap = el("cards"); wrap.innerHTML="";
+    cards.forEach(function(c,idx){
+      var card=document.createElement("div");
+      card.className="card"+(c.hidden===true?" hidden-c":"");
+      card.setAttribute("draggable","true"); card.dataset.idx=idx;
+      var prose=c.layout==="prose";
+      var media=c.template==="poster"||c.template==="clip";
+      var head='<div class="crow">'
+        +'<span class="grip">⠿</span>'
+        +'<span class="num">'+visNum(idx)+'</span>'
+        +'<span class="cid">'+c.id+'</span>'
+        +'<span class="tpl">'+c.template+(prose?' · prose':'')+'</span>'
+        +'<span class="spacer"></span>'
+        +'<label class="toggle"><span class="sw'+(c.hidden!==true?' on':'')+'" data-act="vis" data-idx="'+idx+'"></span>'+(c.hidden===true?'oculta':'visible')+'</label>'
+        +'</div>';
+      var fields='<div class="field"><span class="label">título</span><input type="text" data-f="title" data-idx="'+idx+'" value="'+esc(c.title)+'"></div>';
+      if(prose){
+        var lim = PROSE_LIMITS[c.id] || 380;
+        fields+='<div class="field"><span class="label">texto (subtitle)</span><textarea data-f="subtitle" data-idx="'+idx+'" style="min-height:110px;">'+escT(c.subtitle||"")+'</textarea>'
+          +'<div class="counter" data-counter="'+idx+'" data-limit="'+lim+'"><span class="bar-track"><span class="bar-fill"></span></span><span class="ctext"></span><span class="warn-msg">· en desktop puede cortarse</span></div>'
+          +'<div class="prose-note">card prose: texto largo, sin enlace</div></div>';
+      } else {
+        fields+='<div class="field"><span class="label">subtítulo</span><input type="text" data-f="subtitle" data-idx="'+idx+'" value="'+esc(c.subtitle||"")+'"></div>';
+        fields+='<div class="row2">'
+          +'<div class="field"><span class="label">enlace (href)</span><input type="text" data-f="href" data-idx="'+idx+'" value="'+esc(c.href||"")+'" placeholder="https://… (vacío = sin enlace)"></div>'
+          +'<div class="field"><span class="label">abrir en</span><select data-f="newTab" data-idx="'+idx+'"><option value="true"'+(c.newTab?' selected':'')+'>nueva pestaña</option><option value="false"'+(!c.newTab?' selected':'')+'>misma</option></select></div>'
+          +'</div>';
+      }
+      var mediaBlock="";
+      if(media){
+        var pv=previews[c.id], thumbInner;
+        if(pv){ thumbInner=pv.type==="video"?'<video src="'+pv.url+'" muted></video>':'<img src="'+pv.url+'" alt="">'; }
+        else if(c.asset){ thumbInner='<img src="../'+esc(c.asset)+'" alt="" onerror="this.parentNode.innerHTML=\'<span class=ph>sin<br>preview</span>\'">'; }
+        else { thumbInner='<span class="ph">arrastra<br>imagen</span>'; }
+        var fname=c.asset?c.asset:"assets/cards/"+c.id+(c.template==="clip"?".mp4":".webp");
+        mediaBlock='<div class="media">'
+          +'<div class="thumb" data-drop="'+idx+'">'+thumbInner+'</div>'
+          +'<div class="media-info">archivo: <code>'+fname+'</code>'
+          +'<div class="field" style="margin-top:6px;"><span class="label">alt (accesibilidad)</span><input type="text" data-f="alt" data-idx="'+idx+'" value="'+esc(c.alt||"")+'"></div>'
+          +(pv?'<div class="up">↑ nueva imagen lista. Súbela como <code>'+fname+'</code> a tu repo.</div>':'<div style="margin-top:4px;color:var(--faint)">Arrastra una imagen/vídeo para previsualizar el encuadre (2:3). No la sube — solo previsualiza y te dice dónde va.</div>')
+          +'</div></div>';
+      }
+      card.innerHTML=head+fields+mediaBlock;
+      wrap.appendChild(card);
+    });
+    bindDrag();
+    el("cards").querySelectorAll("[data-counter]").forEach(function(node){
+      var idx=+node.dataset.counter;
+      applyCounter(node, (cards[idx].subtitle||"").length, +node.dataset.limit);
+    });
+    recount();
+  }
+
+  el("cards").addEventListener("input",function(e){
+    var f=e.target.dataset.f, idx=e.target.dataset.idx;
+    if(f===undefined||idx===undefined) return;
+    idx=+idx;
+    if(f==="newTab"){ cards[idx].newTab=e.target.value==="true"; return; }
+    var v=e.target.value;
+    cards[idx][f] = (f==="href"&&v.trim()==="") ? null : ((f==="alt"&&v.trim()==="") ? null : v);
+    if(f==="subtitle" && cards[idx].layout==="prose"){
+      var node=el("cards").querySelector('[data-counter="'+idx+'"]');
+      if(node) applyCounter(node, v.length, +node.dataset.limit);
+    }
+  });
+  el("cards").addEventListener("click",function(e){
+    var sw=e.target.closest('[data-act="vis"]');
+    if(sw){ var i=+sw.dataset.idx;
+      if(cards[i].hidden===true) delete cards[i].hidden; else cards[i].hidden=true;
+      render();
+    }
+  });
+
+  var dragIdx=null;
+  function bindDrag(){
+    el("cards").querySelectorAll(".card").forEach(function(card){
+      card.addEventListener("dragstart",function(e){ dragIdx=+card.dataset.idx; e.dataTransfer.effectAllowed="move"; });
+      card.addEventListener("dragover",function(e){ e.preventDefault(); card.classList.add("drag-over"); });
+      card.addEventListener("dragleave",function(){ card.classList.remove("drag-over"); });
+      card.addEventListener("drop",function(e){
+        e.preventDefault(); card.classList.remove("drag-over");
+        var to=+card.dataset.idx;
+        if(dragIdx===null||dragIdx===to) return;
+        var m=cards.splice(dragIdx,1)[0]; cards.splice(to,0,m); dragIdx=null; render();
+      });
+      var thumb=card.querySelector("[data-drop]");
+      if(thumb){
+        thumb.addEventListener("dragover",function(e){ e.preventDefault(); e.stopPropagation(); });
+        thumb.addEventListener("drop",function(e){
+          e.preventDefault(); e.stopPropagation();
+          var file=e.dataTransfer.files&&e.dataTransfer.files[0]; if(!file) return;
+          var i=+thumb.dataset.drop;
+          previews[cards[i].id]={url:URL.createObjectURL(file),type:file.type.indexOf("video")===0?"video":"img"};
+          render();
+        });
+      }
+    });
+  }
+
+  document.querySelectorAll(".seg button").forEach(function(b){
+    b.addEventListener("click",function(){
+      document.querySelectorAll(".seg button").forEach(function(x){ x.classList.remove("on"); });
+      b.classList.add("on");
+      var t=b.dataset.tab;
+      el("cards").style.display=t==="cards"?"":"none";
+      el("ahora").style.display=t==="ahora"?"":"none";
+    });
+  });
+
+  function updateAhoraCounter(){
+    var node=el("ahora-counter");
+    applyCounter(node, el("ahora-text").value.length, +node.dataset.limit);
+  }
+  el("ahora-text").addEventListener("input", updateAhoraCounter);
+
+  function buildJSON(){
+    var out={"$schema":schemaMeta["$schema"]||"./cards.schema.json", version:schemaMeta.version||1, cards:[]};
+    cards.forEach(function(c){
+      var o={};
+      o.id=c.id; o.title=c.title; o.template=c.template;
+      if(c.layout) o.layout=c.layout;
+      o.subtitle=(c.subtitle===undefined||c.subtitle==="")?null:c.subtitle;
+      o.asset=c.asset||null; o.poster=c.poster||null;
+      o.alt=(c.alt===undefined||c.alt==="")?null:c.alt;
+      o.href=c.href||null; o.newTab=!!c.newTab;
+      if(c.hidden===true) o.hidden=true;
+      out.cards.push(o);
+    });
+    return out;
+  }
+  function validate(){
+    var errs=[],warns=[],ids={};
+    cards.forEach(function(c){
+      if(!c.title||!c.title.trim()) errs.push(c.id+": título vacío");
+      if(ids[c.id]) errs.push("id duplicado: "+c.id);
+      ids[c.id]=1;
+      if(c.href&&!/^https?:\/\//.test(c.href)) errs.push(c.id+': enlace debe empezar por http:// o https://');
+      if(c.layout==="prose" && PROSE_LIMITS[c.id]){
+        var len=(c.subtitle||"").length, lim=PROSE_LIMITS[c.id];
+        if(len>lim) warns.push(c.id+": "+len+"/"+lim+" — en desktop puede desbordar el efecto");
+      }
+    });
+    var at=el("ahora-text").value;
+    if(at.length>PROSE_LIMITS["ahora"]) warns.push("ahora: "+at.length+"/"+PROSE_LIMITS["ahora"]+" — en desktop puede desbordar el efecto");
+    return {errs:errs, warns:warns};
+  }
+  function toJSONText(obj){ return JSON.stringify(obj,null,"\t"); }
+
+  el("gen").addEventListener("click",function(){
+    var v=validate(), st=el("status");
+    var ahoraObj={texto:el("ahora-text").value};
+    if(v.errs.length){
+      el("out").textContent="⚠ Corrige antes de exportar:\n\n"+v.errs.join("\n");
+      st.innerHTML='<span class="warn">'+v.errs.length+' error(es)</span>';
+      el("uploads").innerHTML=""; return;
+    }
+    var cardsText=toJSONText(buildJSON()), ahoraText=toJSONText(ahoraObj);
+    var header = v.warns.length ? ("⚠ AVISO (no bloquea — tú decides):\n"+v.warns.join("\n")+"\n\n") : "";
+    el("out").textContent=header+"── data/cards.json ──\n\n"+cardsText+"\n\n\n── data/ahora.json ──\n\n"+ahoraText;
+    window.__cards=cardsText; window.__ahora=ahoraText;
+    st.innerHTML = v.warns.length ? '<span class="amber">✓ generado · '+v.warns.length+' aviso(s)</span>' : '<span class="ok">✓ válido</span>';
+    var ups=Object.keys(previews);
+    if(ups.length){
+      var html='<div class="up" style="margin-top:10px;">↑ imágenes nuevas para subir a tu repo:</div><ul>';
+      ups.forEach(function(id){
+        var c=cards.filter(function(x){return x.id===id;})[0];
+        var fn=c&&c.asset?c.asset:"assets/cards/"+id+".webp";
+        html+='<li>'+id+' → guarda como <code>'+fn+'</code></li>';
+      });
+      html+='</ul>'; el("uploads").innerHTML=html;
+    } else el("uploads").innerHTML="";
+  });
+
+  function copyText(txt, okMsg){
+    if(!txt){ el("status").innerHTML='<span class="warn">genera primero</span>'; return; }
+    navigator.clipboard.writeText(txt).then(function(){
+      el("status").innerHTML='<span class="ok">✓ '+okMsg+'</span>';
+    },function(){ el("status").innerHTML='<span class="warn">copia manual desde el cuadro</span>'; });
+  }
+  el("copy").addEventListener("click",function(){ copyText(window.__cards,"cards.json copiado"); });
+  el("copy-ahora").addEventListener("click",function(){ copyText(window.__ahora,"ahora.json copiado"); });
+  el("dl").addEventListener("click",function(){
+    if(!window.__cards){ el("status").innerHTML='<span class="warn">genera primero</span>'; return; }
+    [["cards.json",window.__cards],["ahora.json",window.__ahora]].forEach(function(p){
+      var blob=new Blob([p[1]],{type:"application/json"});
+      var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=p[0];
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    });
+    el("status").innerHTML='<span class="ok">✓ descargados</span>';
+  });
+
+  // ---- carga inicial: lee el contenido real ----
+  function loadData(){
+    var lb = el("loadbar");
+    Promise.all([
+      fetch(CARDS_URL, {cache:"no-store"}).then(function(r){ if(!r.ok) throw new Error("cards.json "+r.status); return r.json(); }),
+      fetch(AHORA_URL, {cache:"no-store"}).then(function(r){ if(!r.ok) throw new Error("ahora.json "+r.status); return r.json(); })
+    ]).then(function(res){
+      var cj = res[0], aj = res[1];
+      if(cj["$schema"]) schemaMeta["$schema"]=cj["$schema"];
+      if(cj.version!==undefined) schemaMeta.version=cj.version;
+      cards = (cj.cards||[]).map(function(c){ return Object.assign({}, c); });
+      el("ahora-text").value = aj.texto || "";
+      updateAhoraCounter();
+      render();
+      lb.className="loadbar ok";
+      lb.textContent="✓ Contenido cargado desde el servidor ("+cards.length+" cards). Editas sobre lo que hay publicado ahora mismo.";
+    }).catch(function(err){
+      lb.className="loadbar err";
+      lb.textContent="No pude leer los JSON ("+err.message+"). Comprueba que el editor está en una ruta desde la que ../data/cards.json y ../data/ahora.json son accesibles. Sin datos cargados, el editor no puede arrancar.";
+    });
+  }
+  loadData();
+})();
+</script>
+</body>
+</html>

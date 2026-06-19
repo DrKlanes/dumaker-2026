@@ -1,17 +1,22 @@
 User-agent: *
 Allow: /
+Disallow: /editor-mn82/
 
 # Crawlers de IA (GEO) — permitidos explícitamente
 User-agent: GPTBot
 Allow: /
+Disallow: /editor-mn82/
 
 User-agent: ClaudeBot
 Allow: /
+Disallow: /editor-mn82/
 
 User-agent: PerplexityBot
 Allow: /
+Disallow: /editor-mn82/
 
 User-agent: Google-Extended
 Allow: /
+Disallow: /editor-mn82/
 
 Sitemap: https://dumaker.com/sitemap.xml
