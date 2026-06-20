@@ -187,7 +187,7 @@
 
 .card__sub {
 	position: relative;
-	max-width: 20ch;
+	max-width: 32ch;
 	font-size: var(--fs-body);
 	font-weight: 400;
 	letter-spacing: var(--ls-body);
