@@ -208,7 +208,27 @@ export function rasterizeLabel(mgl, instanceEl, scale) {
 	const ctx = cnv.getContext('2d');
 	ctx.scale(scale, scale);
 
-	const blocks = instanceEl.querySelectorAll('.card__title, .card__sub');
+	// fondos de los badges del escaparate lab: rasterizeLabel solo pinta texto,
+	// así que las cajas de color van aquí (la card las trae como .card__badge,
+	// HARDCODED a lab). Gateado a esos elementos → el resto de cards no tiene
+	// ninguno → cero efecto. Se dibujan antes del texto para que quede encima.
+	for (const b of instanceEl.querySelectorAll('.card__badge')) {
+		const bs = getComputedStyle(b);
+		const br = b.getBoundingClientRect();
+		const bx = br.left - cardRect.left;
+		const by = br.top - cardRect.top;
+		const rad = parseFloat(bs.borderTopLeftRadius) || 0;
+		ctx.fillStyle = bs.backgroundColor;
+		if (rad && ctx.roundRect) {
+			ctx.beginPath();
+			ctx.roundRect(bx, by, br.width, br.height, rad);
+			ctx.fill();
+		} else {
+			ctx.fillRect(bx, by, br.width, br.height);
+		}
+	}
+
+	const blocks = instanceEl.querySelectorAll('.card__title, .card__sub, .card__badge');
 	for (const block of blocks) {
 		for (const line of extractLines(block)) {
 			const s = line.style;

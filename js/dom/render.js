@@ -12,26 +12,51 @@
 
 const num = (i) => String(i).padStart(2, '0');
 
-// Sustituye el token {dias} del subtítulo por el contador real de días desde
-// `card.desde` (fecha ISO "YYYY-MM-DD"): días transcurridos calculados en el
-// navegador al render (cambia una vez al día; no hace falta refrescarlo en vivo).
-// El token YA incluye la unidad con plural correcto — "0 días" / "1 día" /
-// "40 días" — así que el subtítulo se escribe "…lleva {dias} en portada" (la
-// palabra "días" la pone el token). Solo actúa si la card trae `desde` válido y
-// el token aparece: no toca el resto de cards. Se resuelve AQUÍ, en el DOM,
-// ANTES de que la capa GL rasterice el label en FULL (render corre en boot; la
-// GL arranca tras el settled y lee el textContent ya resuelto) → el número llega
-// igual a la textura (FULL) y al DOM (LITE/Fase 1).
-function resolveDaysToken(text, card) {
-	if (!text || !card.desde || text.indexOf('{dias}') === -1) return text;
-	const p = String(card.desde).split('-');
-	const desde = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
-	if (isNaN(desde.getTime())) return text; // fecha inválida: texto sin tocar
+// Días transcurridos desde una fecha ISO "YYYY-MM-DD" (entero ≥ 0), calculados
+// en el navegador (cambian una vez al día). round() es inmune a saltos DST.
+// null si la fecha no es válida. Se calcula en el render (boot), ANTES de que
+// la GL rasterice el label en FULL → el número llega resuelto a la textura y al
+// DOM por igual.
+function daysSince(desde) {
+	if (typeof desde !== 'string') return null;
+	const p = desde.split('-');
+	const d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+	if (isNaN(d.getTime())) return null;
 	const now = new Date();
 	const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-	let dias = Math.round((today - desde) / 86400000); // round: inmune a saltos DST
-	if (dias < 0) dias = 0;
-	return text.replace(/\{dias\}/g, dias + (dias === 1 ? ' día' : ' días'));
+	const n = Math.round((today - d) / 86400000);
+	return n < 0 ? 0 : n;
+}
+
+// Sustituye el token {dias} del subtítulo por el contador con unidad y plural
+// correcto ("0 días" / "1 día" / "40 días"; uso: "…lleva {dias} en portada").
+// Solo actúa si la card trae `desde` válido y el token aparece → no toca el
+// resto. (Mecanismo genérico; hoy lab usa los badges, no el token.)
+function resolveDaysToken(text, card) {
+	if (!text || !card.desde || text.indexOf('{dias}') === -1) return text;
+	const n = daysSince(card.desde);
+	if (n === null) return text;
+	return text.replace(/\{dias\}/g, n + (n === 1 ? ' día' : ' días'));
+}
+
+// Badges del escaparate lab — HARDCODED a esa card. Dos sellos apilados
+// arriba-izquierda; el inferior lleva el contador con formato sello ("DÍA 24 EN
+// PORTADA", número pelado) calculado desde `card.desde`. Van como DOM (LITE/
+// Fase 1 y foco) y rasterizeLabel los pinta en la textura en FULL (se deforman
+// con el efecto). Idempotente: se reconstruye si ya existía.
+function buildLabBadges(li, card) {
+	li.querySelector('.card__badges')?.remove();
+	const wrap = document.createElement('div');
+	wrap.className = 'card__badges';
+	const light = document.createElement('span');
+	light.className = 'card__badge card__badge--light';
+	light.textContent = 'OLD BUT GOLD';
+	const dark = document.createElement('span');
+	dark.className = 'card__badge card__badge--dark';
+	const n = daysSince(card.desde);
+	dark.textContent = n === null ? 'EN PORTADA' : `DÍA ${n} EN PORTADA`;
+	wrap.append(light, dark);
+	li.append(wrap);
 }
 
 // Rellena un <li> de card (existente o recién clonado de template) con los
@@ -78,6 +103,8 @@ function fillCard(li, card, i, ahoraTexto) {
 			link.replaceWith(span);
 		}
 	}
+
+	if (card.id === 'lab') buildLabBadges(li, card); // escaparate: badges propios
 }
 
 export function renderMenu(cards, menuEl) {

@@ -6,11 +6,13 @@
 const STYLE = `
 .strip--cards.gl-on .card__media,
 .strip--cards.gl-on .card__title,
-.strip--cards.gl-on .card__sub { opacity: 0; }
+.strip--cards.gl-on .card__sub,
+.strip--cards.gl-on .card__badges { opacity: 0; }
 .strip--cards.gl-on .card--texto { background: transparent; }
 .strip--cards.gl-on .card.gl-reveal .card__media,
 .strip--cards.gl-on .card.gl-reveal .card__title,
-.strip--cards.gl-on .card.gl-reveal .card__sub { opacity: 1; }
+.strip--cards.gl-on .card.gl-reveal .card__sub,
+.strip--cards.gl-on .card.gl-reveal .card__badges { opacity: 1; }
 .strip--cards.gl-on .card--texto.gl-reveal { background: var(--red); }
 .gl-canvas { position: absolute; z-index: 10; pointer-events: none; }
 /* Perfil LITE (móvil/tablet): el texto NO se rasteriza a textura — se
@@ -22,6 +24,10 @@ const STYLE = `
 	position: relative;
 	z-index: 11;
 }
+/* badges del escaparate lab en LITE: DOM nítido sobre el canvas. Ya son
+   position:absolute con z-index propio (components.css) → solo reactivar
+   opacity; NO tocar position (rompería el anclado arriba-izquierda). */
+.strip--cards.gl-on.gl-lite .card__badges { opacity: 1; }
 `;
 
 export function createDomBridge({ onLayout, onFocusReveal }) {
