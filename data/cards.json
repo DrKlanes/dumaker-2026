@@ -18,7 +18,7 @@
 			"id": "ilustracion",
 			"title": "Ilustración",
 			"template": "poster",
-			"subtitle": "por encima de todo es lo que soy",
+			"subtitle": "Por encima de todo es lo que soy: ilustrador.",
 			"asset": "assets/cards/ilustracion.webp",
 			"poster": null,
 			"alt": "Ilustración de una criatura verde emergiendo del agua",
@@ -29,10 +29,10 @@
 			"id": "diorame",
 			"title": "Diorame",
 			"template": "poster",
-			"subtitle": "mi app de dibujo",
+			"subtitle": "Mi propia app de dibujo. Pruébala.",
 			"asset": "assets/cards/diorame.webp",
 			"poster": null,
-			"alt": "Formas de color creadas con la app de dibujo Diorame",
+			"alt": "Logotipo de Diorame, mi app de dibujo",
 			"href": "https://diorame.com",
 			"newTab": true
 		},
@@ -40,7 +40,7 @@
 			"id": "the-white-cat",
 			"title": "The White Cat's Dark Affair",
 			"template": "clip",
-			"subtitle": "El juego. Estamos en ello y vamos en serio. En Steam.",
+			"subtitle": "Juego. Estamos en ello y vamos en serio. En Steam.",
 			"asset": "assets/cards/the_white_cat.mp4",
 			"poster": null,
 			"alt": "Vídeo del juego The White Cat",
@@ -51,7 +51,7 @@
 			"id": "velatorio",
 			"title": "Velatorio",
 			"template": "poster",
-			"subtitle": "El juego. Una aventura sórdida premiada en la ECTOCOMP 2025. En Itch.io.",
+			"subtitle": "Juego. Una aventura sórdida premiada en la ECTOCOMP 2025. En Itch.io.",
 			"asset": "assets/cards/velatorio.webp",
 			"poster": null,
 			"alt": "Imagen del juego Velatorio",
@@ -92,18 +92,6 @@
 			"newTab": true
 		},
 		{
-			"id": "lab",
-			"title": "#36DaysOfType 2017",
-			"template": "poster",
-			"subtitle": "Escaparate rotatorio: el proyecto que tengo ahora mismo entre manos.",
-			"asset": "assets/cards/lab.webp",
-			"poster": null,
-			"alt": "Imagen provisional del Lab",
-			"href": "https://www.behance.net/gallery/49101507/36DaysOfType-2017",
-			"newTab": false,
-			"desde": "2026-06-20"
-		},
-		{
 			"id": "sobre-mi",
 			"title": "Sobre mí",
 			"template": "poster",
@@ -114,6 +102,18 @@
 			"alt": "Foto de Sobre mí",
 			"href": null,
 			"newTab": false
+		},
+		{
+			"id": "lab",
+			"title": "#36DaysOfType 2017",
+			"template": "poster",
+			"subtitle": "Abecedario animado.",
+			"asset": "assets/cards/lab.webp",
+			"poster": null,
+			"alt": "Ilustración tipográfica proyecto 36 days of type 2017",
+			"href": "https://www.behance.net/gallery/49101507/36DaysOfType-2017",
+			"newTab": true,
+			"desde": "2026-06-20"
 		}
 	]
 }
