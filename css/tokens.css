@@ -19,6 +19,7 @@
 	--font-mono: "Chivo Mono", ui-monospace, "Cascadia Mono", monospace;
 	--fs-display: 64px;
 	--fs-heading: 22px;
+	--fs-label: 18px;      /* etiquetas/sellos — entre body y heading (12 × 1.5) */
 	--fs-menu: 12px;
 	--fs-body: 12px;
 	--ls-menu: 0.08em;     /* UI/Menu: letterSpacing 8% */

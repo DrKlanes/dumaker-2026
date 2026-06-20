@@ -260,12 +260,11 @@
 	padding: 7px 11px;
 	white-space: nowrap;
 }
-/* sello superior: un nivel de tamaño por debajo (18 → 12px, tamaño establecido),
-   conserva su peso bold */
+/* sello superior: tamaño de etiqueta (18px, token --fs-label), peso bold */
 .card__badge--light {
 	background: var(--surface);
 	color: var(--ink);
-	font-size: var(--fs-body);
+	font-size: var(--fs-label);
 	font-weight: 700;
 	letter-spacing: 0.02em;
 }
