@@ -256,15 +256,28 @@
 }
 .card__badge {
 	font-family: var(--font-mono);
-	font-size: 18px;
-	font-weight: 700;
-	letter-spacing: 0.02em;
 	line-height: 1;
-	padding: 9px 14px;
+	padding: 7px 11px;
 	white-space: nowrap;
 }
-.card__badge--light { background: var(--surface); color: var(--ink); }
-.card__badge--dark { background: var(--ink); color: var(--red); }
+/* sello superior: un nivel de tamaño por debajo (18 → 12px, tamaño establecido),
+   conserva su peso bold */
+.card__badge--light {
+	background: var(--surface);
+	color: var(--ink);
+	font-size: var(--fs-body);
+	font-weight: 700;
+	letter-spacing: 0.02em;
+}
+/* contador: estilo de texto predefinido de 12px (Body/XS) */
+.card__badge--dark {
+	background: var(--ink);
+	color: var(--red);
+	font-size: var(--fs-body);
+	font-weight: 400;
+	letter-spacing: var(--ls-body);
+	line-height: var(--lh-body);
+}
 
 /* ── Claim ──────────────────────────────────────────────────────────── */
 .claim {
