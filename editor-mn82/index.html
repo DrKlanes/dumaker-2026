@@ -207,7 +207,9 @@ input[type=date]{cursor:pointer;height:36px;}
   }
   function daysText(iso){ var n=daysFrom(iso); if(n===null) return null; return n + (n===1 ? " día" : " días"); }
   function hasToken(c){ return (c.subtitle||"").indexOf(DAYS_TOKEN) !== -1; }
-  function usesDate(c){ return hasToken(c) || (c.desde!==undefined && c.desde!==null && c.desde!==""); }
+  // lab usa badges (contador en badge, no en subtítulo) → siempre lleva fecha.
+  // Otras cards: fecha si tienen token {dias} en subtítulo o ya traen desde.
+  function usesDate(c){ return c.id==="lab" || hasToken(c) || (c.desde!==undefined && c.desde!==null && c.desde!==""); }
   function todayISO(){ var d=new Date(); return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2); }
 
   function render(){
@@ -254,16 +256,24 @@ input[type=date]{cursor:pointer;height:36px;}
       // fecha del contador
       if(usesDate(c)){
         var dt = daysText(c.desde);
+        var nDays = daysFrom(c.desde);
         var preview = "";
         if(hasToken(c) && dt!==null){ preview = (c.subtitle||"").split(DAYS_TOKEN).join(dt); }
+        var isLab = (c.id==="lab");
+        var calcText = isLab
+          ? (nDays!==null ? "badge: DÍA "+nDays+" EN PORTADA" : "pon una fecha para el badge")
+          : (dt!==null ? dt+" en portada" : "pon una fecha para el contador");
+        var hintText = isLab
+          ? "Esta card (lab) muestra dos badges: «OLD BUT GOLD» y «DÍA N EN PORTADA». El número N son los días desde esta fecha. Ponla al estrenar el proyecto destacado (botón «hoy»)."
+          : (preview ? null : "El token "+DAYS_TOKEN+" del subtítulo se sustituye por los días contados desde esta fecha.");
         fields+='<div class="dateblk">'
           +'<span class="label">fecha del contador (desde)</span>'
           +'<div class="drow">'
           +'<input type="date" data-f="desde" data-id="'+c.id+'" value="'+esc(c.desde||"")+'">'
           +'<button class="today" data-today="'+c.id+'">hoy</button>'
-          +'<span class="calc">'+(dt!==null ? dt+" en portada" : "pon una fecha para el contador")+'</span>'
+          +'<span class="calc">'+calcText+'</span>'
           +'</div>'
-          +(preview ? '<div class="hint">vista del subtítulo: '+esc(preview)+'</div>' : '<div class="hint">El token '+DAYS_TOKEN+' del subtítulo se sustituye por los días contados desde esta fecha.</div>')
+          +(preview ? '<div class="hint">vista del subtítulo: '+esc(preview)+'</div>' : (hintText ? '<div class="hint">'+hintText+'</div>' : ''))
           +'</div>';
       }
       // media / preview + descarga
@@ -410,6 +420,7 @@ input[type=date]{cursor:pointer;height:36px;}
       if(c.href&&!/^https?:\/\//.test(c.href)) errs.push(c.id+': enlace debe empezar por http:// o https://');
       if((c.template==="poster"||c.template==="clip") && !c.asset) warns.push(c.id+": tipo "+c.template+" sin asset");
       if(hasToken(c) && (!c.desde || !/^\d{4}-\d{2}-\d{2}$/.test(c.desde))) errs.push(c.id+': usa el token '+DAYS_TOKEN+' pero le falta una fecha válida (campo desde)');
+      if(c.id==="lab" && c.hidden!==true && (!c.desde || !/^\d{4}-\d{2}-\d{2}$/.test(c.desde))) errs.push('lab: el badge «DÍA N EN PORTADA» necesita una fecha válida (campo desde)');
       if(c.desde && !/^\d{4}-\d{2}-\d{2}$/.test(c.desde)) errs.push(c.id+': fecha desde inválida (debe ser AAAA-MM-DD)');
       if(c.layout==="prose" && PROSE_LIMITS[c.id]){
         var len=(c.subtitle||"").length, lim=PROSE_LIMITS[c.id];
