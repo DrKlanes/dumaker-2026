@@ -318,8 +318,20 @@ input[type=date]{cursor:pointer;height:36px;}
       if(cards[idx].layout==="prose"){
         var node=el("cards").querySelector('[data-counter="'+id+'"]');
         if(node) applyCounter(node, v.length, +node.dataset.limit);
-      } else { render(); }
+      }
+      // No re-render en vivo: destruiría el input y robaría el focus (un carácter
+      // y fuera). El bloque de fecha por token {dias} se reevalúa en 'change'
+      // (al salir del campo), no en cada tecla. lab ya muestra fecha siempre.
     }
+  });
+  el("cards").addEventListener("change",function(e){
+    // al SALIR de un subtítulo (no en cada tecla), reevaluar si el token {dias}
+    // apareció/desapareció para mostrar u ocultar el bloque de fecha.
+    var f=e.target.dataset.f, id=e.target.dataset.id;
+    if(f!=="subtitle"||id===undefined) return;
+    var idx=realIndex(id); if(idx<0) return;
+    if(cards[idx].layout==="prose" || cards[idx].id==="lab") return; // prose y lab no dependen del token
+    render();
   });
   el("cards").addEventListener("click",function(e){
     var sw=e.target.closest('[data-act="vis"]');
