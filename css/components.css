@@ -214,11 +214,14 @@
 .strip--cards.gl-lite .card--prose .card__sub {
 	flex: 1 1 auto;        /* ocupa el alto disponible (card − título − gap − padding) */
 	min-height: 0;         /* permite encoger por debajo del contenido (regla flex) */
-	overflow-y: auto;      /* scroll interno SOLO al desbordar; condicional, sin media query */
-	overscroll-behavior: contain; /* el scroll no propaga al carrusel ni al body */
-	touch-action: auto;    /* ejes separados: vertical scrollea el texto (overflow-y),
-	                          horizontal se encadena al .track → arrastra el carrusel.
-	                          pan-y bloqueaba el arrastre horizontal sobre esta zona. */
+	overflow-y: auto;      /* scroll vertical del texto cuando no cabe (feature liminal) */
+	overflow-x: hidden;    /* NO user-scrollable en horizontal → el swipe horizontal no se
+	                          captura aquí y pasa al .track (arrastra el carrusel). Antes el
+	                          quirk dejaba overflow-x en auto (sí scrollable → atrapaba el
+	                          gesto). Independiente del overflow-y: no toca el scroll vertical. */
+	overscroll-behavior-y: contain; /* contiene SOLO el vertical (no propaga al body);
+	                          el horizontal queda libre para encadenar al carrusel */
+	touch-action: auto;    /* vertical scrollea el texto, horizontal arrastra el carrusel */
 	scrollbar-width: thin; /* Firefox */
 	scrollbar-color: rgba(10, 9, 8, 0.35) transparent;
 }
