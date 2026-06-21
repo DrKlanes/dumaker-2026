@@ -216,7 +216,9 @@
 	min-height: 0;         /* permite encoger por debajo del contenido (regla flex) */
 	overflow-y: auto;      /* scroll interno SOLO al desbordar; condicional, sin media query */
 	overscroll-behavior: contain; /* el scroll no propaga al carrusel ni al body */
-	touch-action: pan-y;   /* touch: gesto vertical = scroll del texto; horizontal = carrusel */
+	touch-action: auto;    /* ejes separados: vertical scrollea el texto (overflow-y),
+	                          horizontal se encadena al .track → arrastra el carrusel.
+	                          pan-y bloqueaba el arrastre horizontal sobre esta zona. */
 	scrollbar-width: thin; /* Firefox */
 	scrollbar-color: rgba(10, 9, 8, 0.35) transparent;
 }
