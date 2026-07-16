@@ -104,7 +104,7 @@ input[type=date]{cursor:pointer;height:36px;}
     <div class="count" id="count"></div>
   </div>
   <div id="loadbar" class="loadbar">Cargando contenido actual desde el servidor…</div>
-  <div class="sub">Edita, reordena y oculta cards. Arrastra una card para reordenar. La numeración salta las ocultas. "Ahora mismo" (00) se edita en su pestaña. El campo asset es editable a mano; arrastrar un archivo lo rellena solo (y ajusta poster/clip). Este editor NO publica: genera el JSON y prepara las imágenes para que las subas tú.</div>
+  <div class="sub">Edita, reordena y oculta cards. Arrastra una card para reordenar. La numeración salta las ocultas. "Ahora mismo" (00) se edita en su pestaña. El campo asset es editable a mano; arrastrar un archivo lo rellena solo (y ajusta poster/clip). El toggle "prose" activa el layout de texto largo (caja grande). Los campos que este editor no conozca se preservan tal cual al exportar. Este editor NO publica: genera el JSON y prepara las imágenes para que las subas tú.</div>
 
   <div class="seg">
     <button class="on" data-tab="cards">cards</button>
@@ -161,7 +161,14 @@ input[type=date]{cursor:pointer;height:36px;}
   var VIDEO_EXTS = {mp4:1, webm:1, mov:1, m4v:1};
 
   var cards = [];
-  var schemaMeta = { "$schema":"./cards.schema.json", version:1 };
+  // raíz del cards.json cargado (todas sus claves, no solo $schema/version):
+  // el export reproduce sus claves y su orden — un campo futuro junto a
+  // version/cards sobrevive al round-trip.
+  var rootMeta = { "$schema":"./cards.schema.json", version:1, cards:[] };
+  // Campos que este editor CONOCE (espejo del schema actual). Todo campo de
+  // una card fuera de esta lista se preserva tal cual en el export y se avisa
+  // al generar — nunca repetir el bug del whitelist que se comió "desde".
+  var KNOWN_FIELDS = ["id","title","template","layout","subtitle","asset","poster","alt","href","newTab","desde","hidden"];
   var ahoraTitle = "Ahora mismo";
   var previews = {};
   var el = function(id){ return document.getElementById(id); };
@@ -225,12 +232,13 @@ input[type=date]{cursor:pointer;height:36px;}
         +'<span class="cid">'+c.id+'</span>'
         +'<span class="tpl">'+c.template+(prose?' · prose':'')+'</span>'
         +'<span class="spacer"></span>'
+        +'<label class="toggle"><span class="sw'+(prose?' on':'')+'" data-act="prose" data-id="'+c.id+'"></span>prose</label>'
         +'<label class="toggle"><span class="sw'+(c.hidden!==true?' on':'')+'" data-act="vis" data-id="'+c.id+'"></span>'+(c.hidden===true?'oculta':'visible')+'</label>'
         +'</div>';
       var fields='<div class="field"><span class="label">título</span><input type="text" data-f="title" data-id="'+c.id+'" value="'+esc(c.title)+'"></div>';
       if(prose){
         var lim = PROSE_LIMITS[c.id] || 380;
-        fields+='<div class="field"><span class="label">texto (subtitle)</span><textarea data-f="subtitle" data-id="'+c.id+'" style="min-height:110px;">'+escT(c.subtitle||"")+'</textarea>'
+        fields+='<div class="field"><span class="label">texto (subtitle)</span><textarea data-f="subtitle" data-id="'+c.id+'" style="min-height:150px;">'+escT(c.subtitle||"")+'</textarea>'
           +'<div class="counter" data-counter="'+c.id+'" data-limit="'+lim+'"><span class="bar-track"><span class="bar-fill"></span></span><span class="ctext"></span><span class="warn-msg">· en desktop puede cortarse</span></div>'
           +'<div class="prose-note">card prose: texto largo, sin enlace</div></div>';
       } else {
@@ -253,6 +261,12 @@ input[type=date]{cursor:pointer;height:36px;}
         +'</div>'
         +'<div class="prose-note">El botón "auto" pone assets/cards/'+c.id+'.&lt;ext&gt;. Debe coincidir con el archivo que subas.</div>'
         +'</div>';
+      // poster: solo tiene sentido en clips (imagen mientras el vídeo no reproduce)
+      if(c.template==="clip"){
+        fields+='<div class="field"><span class="label">poster (imagen opcional del clip)</span>'
+          +'<input type="text" data-f="poster" data-id="'+c.id+'" value="'+esc(c.poster||"")+'" placeholder="assets/cards/'+c.id+'-poster.webp (vacío = sin poster)">'
+          +'</div>';
+      }
       // fecha del contador
       if(usesDate(c)){
         var dt = daysText(c.desde);
@@ -279,6 +293,7 @@ input[type=date]{cursor:pointer;height:36px;}
       // media / preview + descarga
       var pv=previews[c.id], thumbInner;
       if(pv){ thumbInner=pv.type==="video"?'<video src="'+pv.url+'" muted></video>':'<img src="'+pv.url+'" alt="">'; }
+      else if(c.asset && VIDEO_EXTS[extOf(c.asset)]){ thumbInner='<video src="../'+esc(c.asset)+'#t=0.001" muted preload="metadata" onerror="this.parentNode.innerHTML=\'<span class=ph>sin<br>preview</span>\'"></video>'; }
       else if(c.asset){ thumbInner='<img src="../'+esc(c.asset)+'" alt="" onerror="this.parentNode.innerHTML=\'<span class=ph>sin<br>preview</span>\'">'; }
       else { thumbInner='<span class="ph">arrastra<br>imagen</span>'; }
       var infoExtra='';
@@ -312,7 +327,7 @@ input[type=date]{cursor:pointer;height:36px;}
     if(f==="template"){ cards[idx].template=e.target.value; render(); return; }
     var v=e.target.value;
     if(f==="desde"){ cards[idx].desde = v.trim()==="" ? null : v; render(); return; }
-    if(f==="asset"){ cards[idx].asset = v.trim()==="" ? null : v.trim(); return; }
+    if(f==="asset"||f==="poster"){ cards[idx][f] = v.trim()==="" ? null : v.trim(); return; }
     cards[idx][f] = (f==="href"&&v.trim()==="") ? null : ((f==="alt"&&v.trim()==="") ? null : v);
     if(f==="subtitle"){
       if(cards[idx].layout==="prose"){
@@ -337,6 +352,13 @@ input[type=date]{cursor:pointer;height:36px;}
     var sw=e.target.closest('[data-act="vis"]');
     if(sw){ var idx=realIndex(sw.dataset.id);
       if(cards[idx].hidden===true) delete cards[idx].hidden; else cards[idx].hidden=true;
+      render(); return;
+    }
+    var pr=e.target.closest('[data-act="prose"]');
+    if(pr){ var p=realIndex(pr.dataset.id);
+      // layout prose on/off: al quitarlo se borra la clave (las cards estándar
+      // no llevan "layout" en el JSON)
+      if(cards[p].layout==="prose") delete cards[p].layout; else cards[p].layout="prose";
       render(); return;
     }
     var au=e.target.closest('[data-auto]');
@@ -408,7 +430,7 @@ input[type=date]{cursor:pointer;height:36px;}
   el("ahora-text").addEventListener("input", updateAhoraCounter);
 
   function buildJSON(){
-    var out={"$schema":schemaMeta["$schema"]||"./cards.schema.json", version:schemaMeta.version||1, cards:[]};
+    var builtCards=[];
     cards.forEach(function(c){
       var o={};
       o.id=c.id; o.title=c.title; o.template=c.template;
@@ -419,8 +441,16 @@ input[type=date]{cursor:pointer;height:36px;}
       o.href=c.href||null; o.newTab=!!c.newTab;
       if(c.desde!==undefined && c.desde!==null && c.desde!=="") o.desde=c.desde;
       if(c.hidden===true) o.hidden=true;
-      out.cards.push(o);
+      // PRESERVACIÓN POR DEFECTO: cualquier campo que este editor no conozca
+      // viaja intacto al export, al final de la card (en su orden original).
+      Object.keys(c).forEach(function(k){ if(KNOWN_FIELDS.indexOf(k)===-1) o[k]=c[k]; });
+      builtCards.push(o);
     });
+    // raíz fiel al archivo cargado: mismas claves y mismo orden; solo se
+    // sustituye "cards" por la lista editada
+    var out={};
+    Object.keys(rootMeta).forEach(function(k){ out[k]=(k==="cards")?builtCards:rootMeta[k]; });
+    if(out.cards===undefined) out.cards=builtCards;
     return out;
   }
   function validate(){
@@ -429,7 +459,10 @@ input[type=date]{cursor:pointer;height:36px;}
       if(!c.title||!c.title.trim()) errs.push(c.id+": título vacío");
       if(ids[c.id]) errs.push("id duplicado: "+c.id);
       ids[c.id]=1;
-      if(c.href&&!/^https?:\/\//.test(c.href)) errs.push(c.id+': enlace debe empezar por http:// o https://');
+      // espejo de HREF_OK del runtime (js/data/cards.js) y del schema:
+      // https:/http:, /ruta interna o #ancla — todos válidos
+      if(c.href&&!/^(https?:|\/|#)/.test(c.href)) errs.push(c.id+': enlace no permitido — debe empezar por https://, http://, «/» (ruta interna) o «#» (ancla)');
+      Object.keys(c).forEach(function(k){ if(KNOWN_FIELDS.indexOf(k)===-1) warns.push(c.id+': campo desconocido «'+k+'» — este editor no lo edita, pero se preserva tal cual en el export'); });
       if((c.template==="poster"||c.template==="clip") && !c.asset) warns.push(c.id+": tipo "+c.template+" sin asset");
       if(hasToken(c) && (!c.desde || !/^\d{4}-\d{2}-\d{2}$/.test(c.desde))) errs.push(c.id+': usa el token '+DAYS_TOKEN+' pero le falta una fecha válida (campo desde)');
       if(c.id==="lab" && c.hidden!==true && (!c.desde || !/^\d{4}-\d{2}-\d{2}$/.test(c.desde))) errs.push('lab: el badge «DÍA N EN PORTADA» necesita una fecha válida (campo desde)');
@@ -490,8 +523,9 @@ input[type=date]{cursor:pointer;height:36px;}
       fetch(AHORA_URL, {cache:"no-store"}).then(function(r){ if(!r.ok) throw new Error("ahora.json "+r.status); return r.json(); })
     ]).then(function(res){
       var cj=res[0], aj=res[1];
-      if(cj["$schema"]) schemaMeta["$schema"]=cj["$schema"];
-      if(cj.version!==undefined) schemaMeta.version=cj.version;
+      // guardar la RAÍZ COMPLETA (no solo $schema/version): el export
+      // reproduce sus claves en su orden — cero pérdidas en el round-trip
+      if(cj && typeof cj==="object" && !Array.isArray(cj)) rootMeta=cj;
       cards=(cj.cards||[]).map(function(c){ return Object.assign({}, c); });
       var ahoraCard = cards.filter(function(c){ return c.id==="ahora"; })[0];
       if(ahoraCard) ahoraTitle = ahoraCard.title || "Ahora mismo";
