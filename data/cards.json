@@ -105,15 +105,15 @@
 		},
 		{
 			"id": "lab",
-			"title": "#36DaysOfType 2017",
-			"template": "poster",
-			"subtitle": "Abecedario animado.",
+			"title": "Testanera",
+			"template": "clip",
+			"subtitle": "Pixel Promo.",
 			"asset": "assets/cards/lab.webp",
 			"poster": null,
-			"alt": "Ilustración tipográfica proyecto 36 days of type 2017",
-			"href": "https://www.behance.net/gallery/49101507/36DaysOfType-2017",
+			"alt": "Animación en pixelart de un vehículo",
+			"href": "https://www.behance.net/gallery/168898603/Testanera",
 			"newTab": true,
-			"desde": "2026-06-20"
+			"desde": "2026-07-16"
 		}
 	]
 }
