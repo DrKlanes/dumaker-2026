@@ -1,7 +1,7 @@
 {
 	"$schema": "http://json-schema.org/draft-07/schema#",
 	"title": "Cards de dumaker.com",
-	"description": "Las cards del carrusel. El número (00-09) se deriva del orden en el array: reordenar líneas = renumerar.",
+	"description": "Las cards del carrusel. El número (00, 01, …) se deriva del orden en el array: reordenar líneas = renumerar.",
 	"type": "object",
 	"required": ["version", "cards"],
 	"properties": {

@@ -9,7 +9,7 @@
 //                                       //   inmune a los teleports del loop
 //   velocity: { px, smooth },           // px/s; smooth = EMA alfa 0.25
 //   centeredIndex, settled,
-//   cards: [{ index, el, dist, absDist }] // 10 entradas lógicas;
+//   cards: [{ index, el, dist, absDist }] // N entradas lógicas (una por card);
 //                                       //   dist = (centroInstanciaMasCercana
 //                                       //   - centroViewport) / slotW, en
 //                                       //   unidades de slot: vecina = ±1

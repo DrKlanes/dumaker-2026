@@ -48,6 +48,17 @@
 			"newTab": true
 		},
 		{
+			"id": "the-white-cat-watches",
+			"title": "The White Cat Watches",
+			"template": "clip",
+			"subtitle": "Diorama interactivo. De Quill a Unreal Engine. En Itch.io.",
+			"asset": "assets/cards/twcw.mp4",
+			"poster": null,
+			"alt": "Vídeo del diorama interactivo The White Cat Watches",
+			"href": "https://dumakerpro.itch.io/the-white-cat-watches-diorama",
+			"newTab": true
+		},
+		{
 			"id": "velatorio",
 			"title": "Velatorio",
 			"template": "poster",
@@ -92,18 +103,6 @@
 			"newTab": true
 		},
 		{
-			"id": "sobre-mi",
-			"title": "Sobre mí",
-			"template": "poster",
-			"layout": "prose",
-			"subtitle": "Ilustrador, diseñador y creativo multimedia. Creador indie. Albacete navajero. Mis dibujos han aparecido en antologías de Seven Stories Press, Graffito Books, Mad Artist Publishing y Ediciones Babylon, y he expuesto en Londres, Bilbao, Toledo y otras ciudades. Graduado en Diseño Gráfico e ilustración. Stay human, but not much. 👽",
-			"asset": "assets/cards/about.webp",
-			"poster": null,
-			"alt": "Foto de Sobre mí",
-			"href": null,
-			"newTab": false
-		},
-		{
 			"id": "lab",
 			"title": "Testanera",
 			"template": "clip",
@@ -114,6 +113,18 @@
 			"href": "https://www.behance.net/gallery/168898603/Testanera",
 			"newTab": true,
 			"desde": "2026-07-16"
+		},
+		{
+			"id": "sobre-mi",
+			"title": "Sobre mí",
+			"template": "poster",
+			"layout": "prose",
+			"subtitle": "Ilustrador, diseñador y creativo multimedia. Creador indie. Albacete navajero. Mis dibujos han aparecido en antologías de Seven Stories Press, Graffito Books, Mad Artist Publishing y Ediciones Babylon, y he expuesto en Londres, Bilbao, Toledo y otras ciudades. Graduado en Diseño Gráfico e ilustración. Stay human, but not much. 👽",
+			"asset": "assets/cards/about.webp",
+			"poster": null,
+			"alt": "Foto de Sobre mí",
+			"href": null,
+			"newTab": false
 		}
 	]
 }

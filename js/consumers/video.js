@@ -7,8 +7,10 @@ const PLAY_AT = 0.6;
 const PAUSE_AT = 0.8;
 // precarga con margen: el clip carga a 3 slots del centro (≈2.4 slots antes
 // de reproducir) → al llegar ya está decodificado, sin instante de buffering.
-// descarga >4 (histéresis LOAD<UNLOAD). Solo desktop; con 2 clips bien
-// separados, máx 1-2 vídeos cargados a la vez (riesgo bajo).
+// descarga >4 (histéresis LOAD<UNLOAD). Solo desktop; con 4 clips en dos
+// parejas adyacentes (03/04 y 08/09 de 11), máx 3 cargados por LOAD y 4 en
+// tránsito por la histéresis — a ~1-1.8 MB por clip y solo 1 reproduciendo,
+// sigue siendo riesgo bajo.
 const LOAD_AT = 3;
 const UNLOAD_AT = 4;
 
