@@ -58,4 +58,22 @@
 	.strip {
 		padding: var(--space-m);
 	}
+
+	/* cuatro enlaces no caben en una fila estrecha con el gap de desktop:
+	   se aprieta el gap. wrap = red de seguridad (si aun así no cabe,
+	   envuelve en vez de desbordar el marco; el separador de la costura
+	   queda al final de la primera fila) */
+	.strip--footer {
+		flex-wrap: wrap;
+		gap: var(--space-m);
+		row-gap: var(--space-s);
+	}
+}
+
+/* móviles muy estrechos (320-400px): gap mínimo para mantener los cuatro
+   enlaces en UNA fila y que no aparezca el separador huérfano del wrap */
+@media (max-width: 400px) {
+	.strip--footer {
+		gap: var(--space-s);
+	}
 }
