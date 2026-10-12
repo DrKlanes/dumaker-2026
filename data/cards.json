@@ -37,6 +37,17 @@
 			"newTab": true
 		},
 		{
+			"id": "cadaver-florecido",
+			"title": "Cadáver florecido",
+			"template": "clip",
+			"subtitle": "Ilustración viva bajo una campana de cristal. Tócala con las manos. Sin romperla, a ser posible.",
+			"asset": "assets/cards/cadaver-florecido.mp4",
+			"poster": null,
+			"alt": "Animación de la ilustración Cadáver florecido: un cadáver cubierto de setas y plantas bajo una campana de cristal",
+			"href": "/cadaver-florecido/",
+			"newTab": false
+		},
+		{
 			"id": "the-white-cat",
 			"title": "The White Cat's Dark Affair",
 			"template": "clip",
