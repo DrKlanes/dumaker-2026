@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cadáver florecido — Dumaker</title>
+  <meta name="description" content="Bellum, sed tam fragile ut fractum sit. Una ilustración vectorial viva bajo una campana de cristal: muévela con el ratón o con tus manos frente a la cámara." />
+  <meta name="theme-color" content="#c0af8a" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Cadáver florecido — Dumaker" />
+  <meta property="og:description" content="Una ilustración viva bajo una campana de cristal. Bellum, sed tam fragile ut fractum sit." />
+  <meta property="og:url" content="https://dumaker.com/cadaver-florecido/" />
+  <meta property="og:image" content="https://dumaker.com/cadaver-florecido/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M8 28V15a8 8 0 0 1 16 0v13' fill='none' stroke='%232a2f38' stroke-width='2.4'/%3E%3Cpath d='M6 28h20' stroke='%232a2f38' stroke-width='2.4'/%3E%3Ccircle cx='16' cy='5' r='2' fill='%232a2f38'/%3E%3Ccircle cx='16' cy='20' r='3.2' fill='%23d9493e'/%3E%3C/svg%3E" />
+  <script type="module" crossorigin src="./index-C9IS4WXV.js"></script>
+  <link rel="stylesheet" crossorigin href="./index-BIt_C6YP.css">
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-hand" viewBox="0 0 36 36"><path d="M10 31C7 29 5.5 26 5.5 22v-6.5a1.7 1.7 0 0 1 3.4 0V20M8.9 19V8a1.7 1.7 0 0 1 3.4 0v10M12.3 17.5V6a1.7 1.7 0 0 1 3.4 0v11.5M15.7 17.5V7.5a1.7 1.7 0 0 1 3.4 0V19M19.1 18v-7a1.7 1.7 0 0 1 3.4 0v10c0 6-3.5 10-7.5 10z"/></symbol>
+      <symbol id="i-point" viewBox="0 0 36 36"><path d="M12 31c-3-1.5-5-4.5-5-8v-4a1.6 1.6 0 0 1 3.2 0M10.2 20v-2a1.6 1.6 0 0 1 3.2 0v1M13.4 19V8a1.7 1.7 0 0 1 3.4 0v10M16.8 18.5a1.6 1.6 0 0 1 3.2 0v1M20 19.5a1.6 1.6 0 0 1 3.2 0V24c0 4-3 7-7 7z"/></symbol>
+      <symbol id="i-arrow" viewBox="0 0 36 36"><path d="M9 5v20l5-4.5 3.6 8 3-1.4-3.6-7.8H23z"/></symbol>
+    </defs>
+  </svg>
+
+  <canvas id="stage"></canvas>
+  <canvas id="hands"></canvas>
+
+  <aside id="guide" aria-label="Cómo interactuar">
+    <header>
+      <h1>Cadáver florecido</h1>
+      <p class="motto">bellum, sed tam fragile ut fractum sit</p>
+    </header>
+
+    <section class="mode m-hands">
+      <h2>con las manos <span id="seen"></span></h2>
+      <p class="rule">Pocas formas de mano, cada una con lo suyo, sin movimientos rápidos. El cursor te dice cuál estoy viendo.</p>
+
+      <h3><svg class="shape" viewBox="0 0 36 36"><use href="#i-hand"/></svg>mano abierta</h3>
+      <div class="g" data-g="fan">
+        <svg class="ico" viewBox="0 0 36 36"><path d="M6 13c6-4 10 4 16 0s8-2 10 0M4 20c6-4 10 4 16 0s8-2 12 0M8 27c6-4 10 4 16 0"/></svg>
+        <p><b>Muévela</b>, donde quieras<i>el aire entra en la campana y mece plantas y flor</i></p>
+      </div>
+      <div class="g" data-g="warm">
+        <svg class="ico" viewBox="0 0 36 36"><path d="M12 9c-2 2.5 2 4 0 6.5s2 4 0 6.5M18 7c-2 2.5 2 4 0 6.5s2 4 0 6.5s2 4 0 6.5M24 9c-2 2.5 2 4 0 6.5s2 4 0 6.5"/></svg>
+        <p><b>Déjala quieta</b> sobre el cristal<i>tu calor lo empaña, las plantas se vuelven hacia ti y las grietas se cierran</i></p>
+      </div>
+
+      <h3><svg class="shape" viewBox="0 0 36 36"><use href="#i-point"/></svg>índice</h3>
+      <div class="g" data-g="tap">
+        <svg class="ico" viewBox="0 0 36 36"><circle cx="18" cy="18" r="2.5"/><circle cx="18" cy="18" r="7"/><circle cx="18" cy="18" r="13" stroke-dasharray="2 3"/><path d="M18 1.5v3M18 31.5v3M1.5 18h3M31.5 18h3"/></svg>
+        <p><b>Puño con el índice estirado</b>: apunta y <b>empújalo hacia la pantalla</b><i>la mira se cierra mientras empujas; al cerrarse, toque de uña. Retira la mano para volver a tocar</i></p>
+      </div>
+      <div class="g" data-g="punch">
+        <svg class="ico" viewBox="0 0 36 36"><path d="M18 4l2.5 6-4 4 5 5-3 7 1 6M20.5 10l5-1.5M21.5 19l5 2.5"/></svg>
+        <p><b>Tres toques</b> seguidos<i>no seas insistente: se agrieta · si te calmas, se cura</i><span class="knocks" aria-hidden="true"><span></span><span></span><span></span></span></p>
+      </div>
+
+      <h3><svg class="shape" viewBox="0 0 36 36"><circle cx="9" cy="16" r="3"/><circle cx="27" cy="16" r="3"/><path d="M12 16h12"/></svg>dos manos · pellizco</h3>
+      <div class="g" data-g="hold">
+        <svg class="ico" viewBox="0 0 36 36"><path d="M12 30V19a6 6 0 0 1 12 0v11M10 30h16"/><circle cx="6" cy="14" r="2.4"/><circle cx="30" cy="14" r="2.4"/><path d="M8.4 14.5l3.6 3M27.6 14.5l-3.6 3M8.5 7a13 13 0 0 1 19 0M27.5 7l-.3-3M27.5 7l-3 .2"/></svg>
+        <p><b>Pellizca con las dos manos</b><i>índice y pulgar juntos en cada mano: la sostienes de dos hilos. Gíralas como un volante para inclinarla · suelta y cae</i></p>
+      </div>
+
+      <h3><svg class="shape" viewBox="0 0 36 36"><circle cx="18" cy="14" r="6.5"/><path d="M10.5 31c1-5 4-7.5 7.5-7.5s6.5 2.5 7.5 7.5"/></svg>cabeza</h3>
+      <div class="g" data-g="head">
+        <svg class="ico" viewBox="0 0 36 36"><path d="M4 18h7M4 18l2.5-2.5M4 18l2.5 2.5M32 18h-7M32 18l-2.5-2.5M32 18l-2.5 2.5"/><circle cx="18" cy="18" r="4"/></svg>
+        <p><b>Asómate</b> a un lado y a otro<i>el interior tiene profundidad y los brillos del cristal te siguen</i><span class="track" aria-hidden="true"><span></span></span></p>
+      </div>
+    </section>
+
+    <section class="mode m-mouse">
+      <h2>con el ratón</h2>
+      <div class="g" data-g="fan">
+        <svg class="ico" viewBox="0 0 36 36"><use href="#i-arrow"/><path d="M26 11c2.6 2 2.6 6 0 8M29.5 8c4.6 4 4.6 10 0 14"/></svg>
+        <p><b>Muévelo</b> sobre la campana<i>el aire de dentro mece plantas y flor</i></p>
+      </div>
+      <div class="g" data-g="tap">
+        <svg class="ico" viewBox="0 0 36 36"><use href="#i-arrow"/><circle cx="9" cy="5" r="3.5"/></svg>
+        <p><b>Clic</b> sobre el cristal<i>un golpecito con la uña</i></p>
+      </div>
+      <div class="g" data-g="hold">
+        <svg class="ico" viewBox="0 0 36 36"><use href="#i-arrow"/><path d="M22 9.5a10 10 0 0 1 10 2M32 11.5l-1-2.8M32 11.5l-3 .4"/></svg>
+        <p><b>Arrastra</b> la campana<i>la inclinas sobre su base · suelta y cae</i></p>
+      </div>
+      <div class="g" data-g="punch">
+        <svg class="ico" viewBox="0 0 36 36"><use href="#i-arrow"/><path d="M26 6l2.5 5-3 3 4 4-2.5 5.5M2 12h4M1 16h4"/></svg>
+        <p><b>Un barrido violento</b><i>se agrieta · si te calmas, se cura</i></p>
+      </div>
+      <p class="switch"><b>Pulsa el ojo</b> <kbd>c</kbd> y usa tus manos: la cámara se procesa aquí, en tu navegador, y nada sale de él.</p>
+    </section>
+
+    <footer>
+      <span><kbd>c</kbd> cámara</span><span><kbd>v</kbd> vista previa</span><span><kbd>m</kbd> sonido</span><span><kbd>n</kbd> música</span><span><kbd>h</kbd> guía</span><a class="home" href="https://dumaker.com/">dumaker.com</a>
+    </footer>
+  </aside>
+  <button id="guideBtn" title="Mostrar guía (h)" aria-label="Guía">?</button>
+
+  <div id="preview" title="Ocultar vista previa (v)"><canvas id="previewCv" width="320" height="180"></canvas></div>
+  <div id="camStatus"></div>
+  <button id="cam" title="Activar cámara" aria-label="Cámara">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3.2"/></svg>
+  </button>
+</body>
+</html>

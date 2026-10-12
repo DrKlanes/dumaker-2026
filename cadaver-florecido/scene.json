@@ -1,0 +1,408 @@
+{
+ "doc": {
+  "w": 2782,
+  "h": 2229
+ },
+ "soilY": 1400,
+ "pathCount": 2542,
+ "flower": {
+  "joints": [
+   [
+    1185,
+    1404.02197265625
+   ],
+   [
+    1166,
+    1360.6873430524554
+   ],
+   [
+    1173,
+    1317.3527134486608
+   ],
+   [
+    1188,
+    1274.0180838448662
+   ],
+   [
+    1159,
+    1230.6834542410716
+   ],
+   [
+    1133,
+    1187.3488246372767
+   ],
+   [
+    1152,
+    1144.014195033482
+   ],
+   [
+    1169,
+    1100.6795654296875
+   ],
+   [
+    1127.1104282464732,
+    999.400210698921
+   ]
+  ],
+  "headTop": 924.8626098632812,
+  "headBottom": 1100.6795654296875
+ },
+ "layers": [
+  {
+   "name": "Fondo",
+   "index": 0,
+   "vertices": 2205,
+   "indices": 6609,
+   "pos": 1712264,
+   "pid": 1729904,
+   "idx": 1738724
+  },
+  {
+   "name": "Base-01",
+   "index": 1,
+   "vertices": 2358,
+   "indices": 7062,
+   "pos": 1765160,
+   "pid": 1784024,
+   "idx": 1793456
+  },
+  {
+   "name": "Cúpula-01",
+   "index": 2,
+   "vertices": 13396,
+   "indices": 39960,
+   "pos": 1821704,
+   "pid": 1928872,
+   "idx": 1982456
+  },
+  {
+   "name": "Cúpula-·-Brillos-01",
+   "index": 3,
+   "vertices": 1717,
+   "indices": 5028,
+   "pos": 2142296,
+   "pid": 2156032,
+   "idx": 2162900
+  },
+  {
+   "name": "Vegetación-01",
+   "index": 4,
+   "vertices": 10920,
+   "indices": 32310,
+   "pos": 2183012,
+   "pid": 2270372,
+   "idx": 2314052
+  },
+  {
+   "name": "Base-02",
+   "index": 5,
+   "vertices": 524,
+   "indices": 1554,
+   "pos": 2443292,
+   "pid": 2447484,
+   "idx": 2449580
+  },
+  {
+   "name": "Vegetación-02",
+   "index": 6,
+   "vertices": 8096,
+   "indices": 24096,
+   "pos": 2455796,
+   "pid": 2520564,
+   "idx": 2552948
+  },
+  {
+   "name": "Base-03",
+   "index": 7,
+   "vertices": 8502,
+   "indices": 25278,
+   "pos": 2649332,
+   "pid": 2717348,
+   "idx": 2751356
+  },
+  {
+   "name": "Vegetación-03",
+   "index": 8,
+   "vertices": 81009,
+   "indices": 240681,
+   "pos": 2852468,
+   "pid": 3500540,
+   "idx": 3824576
+  },
+  {
+   "name": "Base-04",
+   "index": 9,
+   "vertices": 28124,
+   "indices": 83877,
+   "pos": 4787300,
+   "pid": 5012292,
+   "idx": 5124788
+  },
+  {
+   "name": "Flor-01",
+   "index": 10,
+   "vertices": 17057,
+   "indices": 50886,
+   "pos": 5460296,
+   "pid": 5596752,
+   "idx": 5664980
+  },
+  {
+   "name": "Setas-01",
+   "index": 11,
+   "vertices": 1133,
+   "indices": 3342,
+   "pos": 5868524,
+   "pid": 5877588,
+   "idx": 5882120
+  },
+  {
+   "name": "Vegetación-04",
+   "index": 12,
+   "vertices": 6781,
+   "indices": 20037,
+   "pos": 5895488,
+   "pid": 5949736,
+   "idx": 5976860
+  },
+  {
+   "name": "Flor-02",
+   "index": 13,
+   "vertices": 5928,
+   "indices": 17523,
+   "pos": 6057008,
+   "pid": 6104432,
+   "idx": 6128144
+  },
+  {
+   "name": "Cúpula-02",
+   "index": 14,
+   "vertices": 1713,
+   "indices": 5127,
+   "pos": 6198236,
+   "pid": 6211940,
+   "idx": 6218792
+  },
+  {
+   "name": "Vegetación-05",
+   "index": 15,
+   "vertices": 13942,
+   "indices": 41253,
+   "pos": 6239300,
+   "pid": 6350836,
+   "idx": 6406604
+  },
+  {
+   "name": "Cúpula-03",
+   "index": 16,
+   "vertices": 1833,
+   "indices": 5484,
+   "pos": 6571616,
+   "pid": 6586280,
+   "idx": 6593612
+  },
+  {
+   "name": "Base-·-Texto",
+   "index": 17,
+   "vertices": 15578,
+   "indices": 46302,
+   "pos": 6615548,
+   "pid": 6740172,
+   "idx": 6802484
+  },
+  {
+   "name": "Vegetación-06",
+   "index": 18,
+   "vertices": 636,
+   "indices": 1746,
+   "pos": 6987692,
+   "pid": 6992780,
+   "idx": 6995324
+  },
+  {
+   "name": "Cadáver-01",
+   "index": 19,
+   "vertices": 38511,
+   "indices": 112452,
+   "pos": 7002308,
+   "pid": 7310396,
+   "idx": 7464440
+  },
+  {
+   "name": "Base-05",
+   "index": 20,
+   "vertices": 1548,
+   "indices": 4557,
+   "pos": 7914248,
+   "pid": 7926632,
+   "idx": 7932824
+  },
+  {
+   "name": "Cadáver-02",
+   "index": 21,
+   "vertices": 1236,
+   "indices": 3531,
+   "pos": 7951052,
+   "pid": 7960940,
+   "idx": 7965884
+  },
+  {
+   "name": "Vegetación-07",
+   "index": 22,
+   "vertices": 4795,
+   "indices": 13752,
+   "pos": 7980008,
+   "pid": 8018368,
+   "idx": 8037548
+  },
+  {
+   "name": "Cadáver-03",
+   "index": 23,
+   "vertices": 801,
+   "indices": 2277,
+   "pos": 8092556,
+   "pid": 8098964,
+   "idx": 8102168
+  },
+  {
+   "name": "Base-06",
+   "index": 24,
+   "vertices": 1067,
+   "indices": 3087,
+   "pos": 8111276,
+   "pid": 8119812,
+   "idx": 8124080
+  },
+  {
+   "name": "Cadáver-04",
+   "index": 25,
+   "vertices": 10901,
+   "indices": 31296,
+   "pos": 8136428,
+   "pid": 8223636,
+   "idx": 8267240
+  },
+  {
+   "name": "Vegetación-08",
+   "index": 26,
+   "vertices": 685,
+   "indices": 1959,
+   "pos": 8392424,
+   "pid": 8397904,
+   "idx": 8400644
+  },
+  {
+   "name": "Setas-02",
+   "index": 27,
+   "vertices": 23210,
+   "indices": 67041,
+   "pos": 8408480,
+   "pid": 8594160,
+   "idx": 8687000
+  },
+  {
+   "name": "Vegetación-09",
+   "index": 28,
+   "vertices": 10403,
+   "indices": 30672,
+   "pos": 8955164,
+   "pid": 9038388,
+   "idx": 9080000
+  },
+  {
+   "name": "Setas-03",
+   "index": 29,
+   "vertices": 8603,
+   "indices": 24933,
+   "pos": 9202688,
+   "pid": 9271512,
+   "idx": 9305924
+  },
+  {
+   "name": "Base-07",
+   "index": 30,
+   "vertices": 2129,
+   "indices": 6321,
+   "pos": 9405656,
+   "pid": 9422688,
+   "idx": 9431204
+  },
+  {
+   "name": "Vegetación-10",
+   "index": 31,
+   "vertices": 8961,
+   "indices": 26619,
+   "pos": 9456488,
+   "pid": 9528176,
+   "idx": 9564020
+  },
+  {
+   "name": "Base-08",
+   "index": 32,
+   "vertices": 2752,
+   "indices": 8172,
+   "pos": 9670496,
+   "pid": 9692512,
+   "idx": 9703520
+  },
+  {
+   "name": "Vegetación-11",
+   "index": 33,
+   "vertices": 49606,
+   "indices": 147726,
+   "pos": 9736208,
+   "pid": 10133056,
+   "idx": 10331480
+  },
+  {
+   "name": "Cúpula-·-Brillos-02",
+   "index": 34,
+   "vertices": 6686,
+   "indices": 19962,
+   "pos": 10922384,
+   "pid": 10975872,
+   "idx": 11002616
+  },
+  {
+   "name": "Vegetación-12",
+   "index": 35,
+   "vertices": 127,
+   "indices": 363,
+   "pos": 11082464,
+   "pid": 11083480,
+   "idx": 11083988
+  }
+ ],
+ "table": {
+  "offset": 0,
+  "length": 40672
+ },
+ "dome": {
+  "offset": 162688,
+  "w": 1391,
+  "h": 1114,
+  "scale": 2,
+  "box": [
+   794,
+   470,
+   1856,
+   1462
+  ],
+  "fit": {
+   "cx": 1324.3909240246285,
+   "cy": 1111.5295473346487,
+   "rx": 533.8412819921505,
+   "ry": 579.2909948248416,
+   "rxb": 424.3932252845261,
+   "a": 2.325388096040115,
+   "b": 3.179614751110784,
+   "bottom": 1462,
+   "knob": {
+    "cx": 1325,
+    "cy": 495,
+    "rx": 73,
+    "ry": 25
+   }
+  }
+ }
+}
