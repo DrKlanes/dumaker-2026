@@ -4463,19 +4463,25 @@ float vnoise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f);
         c = hash(dot(i + vec2(0,1), vec2(1.0, 57.0))), d = hash(dot(i + vec2(1,1), vec2(1.0, 57.0)));
   return mix(mix(a, b, f.x), mix(c, d, f.x), f.y); }
 
+// Integer hash (PCG): no sin()-hash correlations, so drops never line up along diagonals.
+uint pcg(uint v){ uint st = v * 747796405u + 2891336453u; uint w = ((st >> ((st >> 28u) + 4u)) ^ st) * 277803737u; return (w >> 22u) ^ w; }
+uint cellHash(vec2 c, uint seed){ ivec2 i = ivec2(c); return pcg(uint(i.x) + pcg(uint(i.y) + pcg(seed))); }
+float u01(uint h){ return float(h) * (1.0 / 4294967295.0); }
+
 // Nearest condensation drop around p (doc px). cs = cell size, dens = 0..1 share of cells holding a drop.
 // Returns (coverage, offset from centre x, y in px, radius in px); coverage 0 = no drop here.
-vec4 dropAt(vec2 p, float cs, float seed, float dens){
+vec4 dropAt(vec2 p, float cs, uint seed, float dens){
   vec2 g = p / cs, ci = floor(g);
   vec4 best = vec4(0.0);
   for (int y = -1; y <= 1; y++) for (int x = -1; x <= 1; x++) {
     vec2 c = ci + vec2(float(x), float(y));
-    float h = hash(dot(c, vec2(17.0 + seed, 91.0 - seed)) + seed);
-    if (h > dens) continue;
-    vec2 pos = c + 0.5 + (vec2(hash(h * 9.1 + seed), hash(h * 3.7 + seed * 2.0)) - 0.5) * 0.95;
-    float r = (0.12 + 0.34 * pow(hash(h * 5.3 + seed), 2.4)) * cs;
+    uint h = cellHash(c, seed);
+    if (u01(h) > dens) continue;
+    uint h1 = pcg(h), h2 = pcg(h1), h3 = pcg(h2), h4 = pcg(h3);
+    vec2 pos = c + vec2(u01(h1), u01(h2));                       // anywhere in its cell
+    float r = max(1.8, (0.14 + 0.34 * pow(u01(h3), 2.4)) * cs);
     vec2 q = (g - pos) * cs;
-    q.y *= 0.92 - 0.08 * hash(h * 2.9);                    // gravity: slightly taller than wide
+    q.y *= 0.92 - 0.08 * u01(h4);                                // gravity: slightly taller than wide
     float l = length(q), dw = fwidth(l) + 0.6;
     float cov = 1.0 - smoothstep(r - dw, r + dw, l);
     if (cov > best.x) best = vec4(cov, q, r);
@@ -4601,9 +4607,9 @@ void main(){
       // (so drops cross cell borders), a warped domain, two populations (many small, few large),
       // clustered by noise and only where the mist is thick. Each is a tiny inverted lens.
       float dens = smoothstep(0.42, 1.0, f) * (0.55 + 0.7 * vnoise(vDoc * 0.012 + 3.1));
-      vec2 pw = vDoc + (vec2(vnoise(vDoc * 0.02), vnoise(vDoc * 0.02 + 5.7)) - 0.5) * 16.0;
-      vec4 dL = dropAt(pw, 30.0, 1.7, dens * 0.3);
-      vec4 dS = dropAt(pw + 13.0, 9.0, 7.3, dens * 0.7);
+      vec2 pw = vDoc + (vec2(vnoise(vDoc * 0.02), vnoise(vDoc * 0.02 + 5.7)) - 0.5) * 22.0;
+      vec4 dL = dropAt(pw, 30.0, 17u, dens * 0.3);
+      vec4 dS = dropAt(pw, 9.0, 73u, dens * 0.7);
       vec4 dd = dL.x > 0.0 ? dL : dS;                      // big drops sit over the small ones
       if (dd.x > 0.0) {
         vec2 q = dd.yz; float rad = dd.w;                   // q in px from the drop centre, rad in px
