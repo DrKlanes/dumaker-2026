@@ -127,13 +127,16 @@
     </section>
 
     <footer>
-      <span><kbd>c</kbd> cámara</span><span><kbd>v</kbd> vista previa</span><span><kbd>m</kbd> sonido</span><span><kbd>n</kbd> música</span><span><kbd>h</kbd> guía</span><a class="home" href="https://dumaker.com/">dumaker.com</a>
+      <span><kbd>c</kbd> cámara</span><span><kbd>v</kbd> vista previa</span><span><kbd>m</kbd> sonido</span><span><kbd>n</kbd> música</span><span><kbd>h</kbd> guía</span><span><kbd>z</kbd> superzoom</span><a class="home" href="https://dumaker.com/">dumaker.com</a>
     </footer>
   </aside>
   <button id="guideBtn" title="Mostrar guía (h)" aria-label="Guía">?</button>
 
   <div id="preview" title="Ocultar vista previa (v)"><canvas id="previewCv" width="320" height="180"></canvas></div>
   <div id="camStatus"></div>
+  <button id="zoom" title="Superzoom (z)" aria-label="Superzoom" aria-pressed="false">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.4 15.4L21 21"/><path class="v" d="M10.5 7.5v6"/><path d="M7.5 10.5h6"/></svg>
+  </button>
   <button id="cam" title="Activar cámara" aria-label="Cámara">
     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3.2"/></svg>
   </button>
